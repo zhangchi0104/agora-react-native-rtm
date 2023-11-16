@@ -1,0 +1,110 @@
+import { NavigationContainer } from '@react-navigation/native';
+import {
+  StackScreenProps,
+  createStackNavigator,
+} from '@react-navigation/stack';
+import { isDebuggable, setDebuggable } from 'agora-react-native-rtm';
+import React from 'react';
+import {
+  Keyboard,
+  SafeAreaView,
+  SectionList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
+import Advanced from './advanced';
+import Basic from './basic';
+import Client from './components/Client';
+const RootStack = createStackNavigator<any>();
+setDebuggable(!isDebuggable());
+const DATA = [Basic, Advanced];
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <SafeAreaView
+        style={styles.container}
+        onStartShouldSetResponder={(_) => {
+          Keyboard.dismiss();
+          return false;
+        }}
+      >
+        <RootStack.Navigator screenOptions={{ gestureEnabled: false }}>
+          <RootStack.Screen name={'APIExample'} component={Home} />
+          {DATA.map((value) =>
+            value.data.map(({ name, component }) => {
+              const RouteComponent = component;
+              return RouteComponent ? (
+                <RootStack.Screen
+                  name={name}
+                  children={() => (
+                    <Client>
+                      <RouteComponent />
+                    </Client>
+                  )}
+                />
+              ) : undefined;
+            })
+          )}
+        </RootStack.Navigator>
+        <TouchableOpacity
+          onPress={() => {
+            setDebuggable(!isDebuggable());
+          }}
+        />
+      </SafeAreaView>
+    </NavigationContainer>
+  );
+}
+
+const AppSectionList = SectionList<any>;
+
+const Home = ({ navigation }: StackScreenProps<any>) => {
+  return (
+    <AppSectionList
+      sections={DATA}
+      keyExtractor={(item, index) => item.name + index}
+      renderItem={({ item }) => <Item item={item} navigation={navigation} />}
+      renderSectionHeader={({ section: { title } }) => (
+        <Text style={styles.header}>{title}</Text>
+      )}
+    />
+  );
+};
+
+const Item = ({
+  item,
+  navigation,
+}: Omit<StackScreenProps<any>, 'route'> & { item: any }) => (
+  <View style={styles.item}>
+    <TouchableOpacity onPress={() => navigation.navigate(item.name)}>
+      <Text style={styles.title}>{item.name}</Text>
+    </TouchableOpacity>
+  </View>
+);
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    padding: 10,
+    fontSize: 24,
+    color: 'white',
+    backgroundColor: 'grey',
+  },
+  item: {
+    padding: 15,
+  },
+  title: {
+    fontSize: 24,
+    color: 'black',
+  },
+  version: {
+    backgroundColor: '#ffffffdd',
+    textAlign: 'center',
+  },
+});

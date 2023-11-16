@@ -1,0 +1,11 @@
+
+{{#user_data.hasComment}}
+/**
+{{{user_data.comment}}}
+*/
+{{/user_data.hasComment}}
+export class {{name}} {
+{{#member_variables}}
+  {{name}}?: {{#type}}{{source}}{{/type}};
+{{/member_variables}}
+}

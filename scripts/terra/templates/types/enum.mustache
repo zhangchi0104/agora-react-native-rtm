@@ -1,0 +1,16 @@
+
+{{#user_data.hasComment}}
+/**
+{{{user_data.comment}}}
+*/
+{{/user_data.hasComment}}
+export enum {{name}} {
+{{#enum_constants}}
+  {{#user_data.hasComment}}
+  /**
+  {{{user_data.comment}}}
+  */
+  {{/user_data.hasComment}}
+  {{name}} = {{value}},
+{{/enum_constants}}
+}
