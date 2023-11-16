@@ -197,8 +197,8 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(callApi
   void *handler[1] = {self.eventHandler};
   if (bufferArray.count == 0) {
     std::smatch output;
-    std::regex pattern = std::regex(
-        "^.*(Observer|Handler|Callback|Receiver|DirectCdnStreaming)$");
+    std::regex pattern = std::regex("^.*(RtmClient_initialize|StreamChannel_"
+                                    "publishTopicMessage|RtmClient_publish)$");
     std::string name = funcName.UTF8String;
     if (std::regex_match(name, output, pattern)) {
       param.buffer = handler;
