@@ -1,5 +1,7 @@
 import { Buffer } from 'buffer';
 
+import base64 from 'base64-js';
+
 import EventEmitter from 'eventemitter3';
 import { NativeEventEmitter } from 'react-native';
 
@@ -70,6 +72,17 @@ export const EVENT_PROCESSORS: EventProcessors = {
     type: () => EVENT_TYPE.IRtmClient,
     func: [processIRtmEventHandler],
     handlers: () => RtmClientInternal._event_handlers,
+    preprocess: (
+      event: string,
+      data: { event: { message?: string } },
+      buffers: Uint8Array[]
+    ) => {
+      switch (event) {
+        case 'onMessageEvent':
+          data.event.message = buffers[0]?.toString();
+      }
+      return { event, data, buffers };
+    },
   },
 };
 
@@ -135,12 +148,27 @@ export function callIrisApi(this: any, funcName: string, params: any): any {
       params.toJSON = function () {
         return { ...json, channelName: params.channelName };
       };
-      console.log(666, params);
     }
-    // switch (funcName) {
-    //   case 'StreamChannel_join':
-    //     break;
-    // }
+    if (funcName === 'RtmClient_publish') {
+      if (typeof params.message === 'string') {
+        buffers.push(
+          base64.fromByteArray(
+            Buffer.from(params.message ?? '') ?? Buffer.from('')
+          )
+        );
+      } else {
+        buffers.push(base64.fromByteArray(params.message ?? Buffer.from('')));
+      }
+      // delete params.message;
+      const json = params.toJSON?.call();
+      delete json.message;
+      params.toJSON = function () {
+        return { ...json };
+      };
+    }
+
+    // RTM_ERROR_DUPLICATE_OPERATION
+
     if (funcName === 'RtmClient_initialize') {
       let config: RtmConfig = params.config;
       if (config.eventHandler) {

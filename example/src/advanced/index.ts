@@ -1,11 +1,11 @@
-import JoinChannel from './JoinChannel/index';
+import PublishMessage from './publishMessage';
 
 const Advanced = {
   title: 'Advanced',
   data: [
     {
-      name: 'JoinChannel',
-      component: JoinChannel,
+      name: 'PublishMessage',
+      component: PublishMessage,
     },
   ],
 };

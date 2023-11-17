@@ -3,10 +3,16 @@ import {
   StackScreenProps,
   createStackNavigator,
 } from '@react-navigation/stack';
-import { isDebuggable, setDebuggable } from 'agora-react-native-rtm';
-import React from 'react';
+import createAgoraRtmClient, {
+  isDebuggable,
+  setDebuggable,
+} from 'agora-react-native-rtm';
+import React, { useEffect } from 'react';
 import {
+  AppState,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   SafeAreaView,
   SectionList,
   StyleSheet,
@@ -18,11 +24,23 @@ import {
 import Advanced from './advanced';
 import Basic from './basic';
 import Client from './components/Client';
+import { AgoraStyle } from './components/ui';
 const RootStack = createStackNavigator<any>();
 setDebuggable(!isDebuggable());
 const DATA = [Basic, Advanced];
 
 export default function App() {
+  useEffect(() => {
+    let subscription = AppState.addEventListener('change', (state) => {
+      //just for live reload mode To reset the rtm client
+      if (state === 'background') {
+        createAgoraRtmClient().release();
+      }
+    });
+    return () => {
+      subscription.remove();
+    };
+  }, []);
   return (
     <NavigationContainer>
       <SafeAreaView
@@ -41,9 +59,14 @@ export default function App() {
                 <RootStack.Screen
                   name={name}
                   children={() => (
-                    <Client>
-                      <RouteComponent />
-                    </Client>
+                    <KeyboardAvoidingView
+                      style={AgoraStyle.fullSize}
+                      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    >
+                      <Client>
+                        <RouteComponent />
+                      </Client>
+                    </KeyboardAvoidingView>
                   )}
                 />
               ) : undefined;

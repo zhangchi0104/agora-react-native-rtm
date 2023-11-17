@@ -1,4 +1,9 @@
 import { IRtmClient } from './IAgoraRtmClient';
+
+import { RtmClientInternal } from './internal/RtmClientInternal';
+
+import { isDebuggable } from './index';
+
 export * from './AgoraRtmBase';
 export * from './IAgoraRtmClient';
 export * from './IAgoraRtmLock';
@@ -11,8 +16,6 @@ export {
   setDebuggable,
   callIrisApi,
 } from './internal/IrisRtmEngine';
-
-import { RtmClientInternal } from './internal/RtmClientInternal';
 
 const instance = new RtmClientInternal();
 

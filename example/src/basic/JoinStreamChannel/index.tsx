@@ -5,9 +5,6 @@ import {
 } from 'agora-react-native-rtm';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { KeyboardAvoidingView, Platform } from 'react-native';
-
-import Client from '../../components/Client';
 import {
   AgoraButton,
   AgoraStyle,
@@ -22,7 +19,7 @@ export default function JoinStreamChannel() {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [joinSuccess, setJoinSuccess] = useState(false);
   const [streamChannel, setStreamChannel] = useState<IStreamChannel>();
-  const [channelName, setChannelName] = useState<string>('');
+  const [cName, setCName] = useState<string>('');
 
   const onLoginResult = useCallback((errorCode: RTM_ERROR_CODE) => {
     log.info('onLoginResult', 'errorCode', errorCode);
@@ -47,7 +44,7 @@ export default function JoinStreamChannel() {
         'errorCode',
         errorCode
       );
-      setChannelName(channelName);
+      setCName(channelName);
       setJoinSuccess(errorCode === RTM_ERROR_CODE.RTM_ERROR_OK);
     },
     []
@@ -127,7 +124,6 @@ export default function JoinStreamChannel() {
         token: Config.appId,
         withMetadata: true,
         withPresence: true,
-        withLock: false,
       },
       1
     );
@@ -155,9 +151,9 @@ export default function JoinStreamChannel() {
   };
 
   useEffect(() => {
-    setChannelName(streamChannel?.getChannelName() || '');
+    setCName(streamChannel?.getChannelName() || '');
     return () => {
-      setChannelName(streamChannel?.getChannelName() || '');
+      setCName(streamChannel?.getChannelName() || '');
     };
   }, [streamChannel]);
 
@@ -176,36 +172,29 @@ export default function JoinStreamChannel() {
   }, [client, onLoginResult, onJoinResult, onLeaveResult, onTopicEvent]);
 
   return (
-    <Client>
-      <KeyboardAvoidingView
-        style={AgoraStyle.fullSize}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <AgoraView style={AgoraStyle.fullWidth}>
-          <AgoraText>{`current login userId:\n${Config.uid}`}</AgoraText>
-          <AgoraText>{`current streamChannelName:\n${channelName}`}</AgoraText>
-          <AgoraButton
-            disabled={!loginSuccess}
-            title={`createStreamChannel`}
-            onPress={() => {
-              createStreamChannel();
-            }}
-          />
-          <AgoraButton
-            disabled={!loginSuccess}
-            title={`${joinSuccess ? 'leave' : 'join'}`}
-            onPress={() => {
-              joinSuccess ? leave() : join();
-            }}
-          />
-          <AgoraButton
-            title={`destroyStreamChannel`}
-            onPress={() => {
-              destroyStreamChannel();
-            }}
-          />
-        </AgoraView>
-      </KeyboardAvoidingView>
-    </Client>
+    <AgoraView style={AgoraStyle.fullWidth}>
+      <AgoraText>{`current login userId:\n${Config.uid}`}</AgoraText>
+      <AgoraText>{`current streamChannelName:\n${cName}`}</AgoraText>
+      <AgoraButton
+        disabled={!loginSuccess}
+        title={`createStreamChannel`}
+        onPress={() => {
+          createStreamChannel();
+        }}
+      />
+      <AgoraButton
+        disabled={!loginSuccess}
+        title={`${joinSuccess ? 'leave' : 'join'}`}
+        onPress={() => {
+          joinSuccess ? leave() : join();
+        }}
+      />
+      <AgoraButton
+        title={`destroyStreamChannel`}
+        onPress={() => {
+          destroyStreamChannel();
+        }}
+      />
+    </AgoraView>
   );
 }

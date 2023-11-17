@@ -10,7 +10,7 @@ const config = {
   appId: env.appId,
   // Please refer to https://docs.agora.io/en/Agora%20Platform/token
   token: env.token || '',
-  channelName: 'rtmtestrtm',
+  channelName: env.channelName,
   uid: env.uid,
   logFilePath: '',
 };

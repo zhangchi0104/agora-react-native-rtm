@@ -183,12 +183,12 @@ export const AgoraListItem = (props: ListItemProps) => {
 };
 
 export const AgoraCard = (
-  props: CardProps & { title: string; children?: ReactElement }
+  props: CardProps & { title?: string; children?: ReactElement }
 ) => {
   const { title, children, ...others } = props;
   return (
     <Card containerStyle={AgoraStyle.listItem} {...others}>
-      <Card.Title>{title}</Card.Title>
+      {title && <Card.Title>{title}</Card.Title>}
       {children}
     </Card>
   );

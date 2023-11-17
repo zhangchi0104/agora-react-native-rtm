@@ -1,9 +1,10 @@
-import { RTM_ERROR_CODE } from 'agora-react-native-rtm';
+import {
+  RTM_CONNECTION_CHANGE_REASON,
+  RTM_CONNECTION_STATE,
+  RTM_ERROR_CODE,
+} from 'agora-react-native-rtm';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { KeyboardAvoidingView, Platform } from 'react-native';
-
-import Client from '../../components/Client';
 import {
   AgoraButton,
   AgoraStyle,
@@ -18,11 +19,29 @@ import * as log from '../../utils/log';
 export default function Login() {
   const [uid, setUid] = useState(Config.uid);
   const [loginSuccess, setLoginSuccess] = useState(false);
-
   const onLoginResult = useCallback((errorCode: RTM_ERROR_CODE) => {
-    log.log('onLoginResult', errorCode);
+    log.log('onLoginResult', 'errorCode', errorCode);
     setLoginSuccess(errorCode === RTM_ERROR_CODE.RTM_ERROR_OK);
   }, []);
+
+  const onConnectionStateChanged = useCallback(
+    (
+      channelName: string,
+      state: RTM_CONNECTION_STATE,
+      reason: RTM_CONNECTION_CHANGE_REASON
+    ) => {
+      log.log(
+        'onConnectionStateChanged',
+        'channelName',
+        channelName,
+        'state',
+        state,
+        'reason',
+        reason
+      );
+    },
+    []
+  );
 
   /**
    * Step 1: getRtmClient
@@ -33,6 +52,9 @@ export default function Login() {
    * Step 2: initialize rtm client
    */
   useEffect(() => {
+    if (!uid || uid.length === 0) {
+      return;
+    }
     client.initialize({
       userId: uid,
       appId: Config.appId,
@@ -43,9 +65,10 @@ export default function Login() {
       },
     });
     return () => {
+      setLoginSuccess(false);
       client.release();
     };
-  }, [client, onLoginResult, uid]);
+  }, [client, uid]);
 
   /**
    * Step 3: login to rtm
@@ -62,44 +85,37 @@ export default function Login() {
     setLoginSuccess(false);
   };
 
-  const onUidChange = (value: string) => {
-    setUid(value);
-  };
-
   useEffect(() => {
     client?.addEventListener('onLoginResult', onLoginResult);
-
+    client?.addEventListener(
+      'onConnectionStateChanged',
+      onConnectionStateChanged
+    );
     return () => {
       client?.removeEventListener('onLoginResult', onLoginResult);
     };
-  }, [client, onLoginResult]);
+  }, [client, uid, onLoginResult, onConnectionStateChanged]);
 
   return (
-    <Client>
-      <KeyboardAvoidingView
-        style={AgoraStyle.fullSize}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <AgoraView style={AgoraStyle.fullWidth}>
-          {loginSuccess ? (
-            <AgoraText>{`current login userId:\n${uid}`}</AgoraText>
-          ) : (
-            <AgoraTextInput
-              onChangeText={(text) => {
-                onUidChange(text);
-              }}
-              label="userId"
-              value={uid}
-            />
-          )}
-          <AgoraButton
-            title={`${loginSuccess ? 'logout' : 'login'}`}
-            onPress={() => {
-              loginSuccess ? logout() : login();
-            }}
-          />
-        </AgoraView>
-      </KeyboardAvoidingView>
-    </Client>
+    <AgoraView style={AgoraStyle.fullWidth}>
+      {loginSuccess ? (
+        <AgoraText>{`current login userId:\n${uid}`}</AgoraText>
+      ) : (
+        <AgoraTextInput
+          onChangeText={(text) => {
+            setUid(text);
+          }}
+          placeholder="please input userId"
+          label="userId"
+          value={uid}
+        />
+      )}
+      <AgoraButton
+        title={`${loginSuccess ? 'logout' : 'login'}`}
+        onPress={() => {
+          loginSuccess ? logout() : login();
+        }}
+      />
+    </AgoraView>
   );
 }
