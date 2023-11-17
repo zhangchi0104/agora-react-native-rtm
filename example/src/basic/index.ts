@@ -1,4 +1,5 @@
-import Login from './Login/index';
+import JoinStreamChannel from './JoinStreamChannel';
+import Login from './Login';
 
 const Basic = {
   title: 'Basic',
@@ -6,6 +7,10 @@ const Basic = {
     {
       name: 'Login',
       component: Login,
+    },
+    {
+      name: 'JoinStreamChannel',
+      component: JoinStreamChannel,
     },
   ],
 };

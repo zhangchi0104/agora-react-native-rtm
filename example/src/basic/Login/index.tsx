@@ -1,13 +1,11 @@
-// import { ClientRoleType } from 'agora-react-native-rtm';
-import React, { ReactElement, useCallback, useEffect, useState } from 'react';
+import { RTM_ERROR_CODE } from 'agora-react-native-rtm';
+import React, { useCallback, useEffect, useState } from 'react';
 
-import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 
-import { RTM_ERROR_CODE } from '../../../../src/AgoraRtmBase';
 import Client from '../../components/Client';
 import {
   AgoraButton,
-  AgoraDivider,
   AgoraStyle,
   AgoraText,
   AgoraTextInput,

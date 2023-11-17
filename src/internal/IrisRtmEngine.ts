@@ -10,6 +10,7 @@ import { createAgoraRtmClient } from '../index';
 import AgoraRtmNg from '../specs';
 
 import { RtmClientInternal } from './RtmClientInternal';
+import { StreamChannelInternal } from './StreamChannelInternal';
 
 export type IrisApiParam = {
   funcName: string;
@@ -124,10 +125,22 @@ function handleEvent({ event, data, buffers }: any) {
 /**
  * @internal
  */
-export function callIrisApi(funcName: string, params: any): any {
+export function callIrisApi(this: any, funcName: string, params: any): any {
   try {
     const buffers: string[] = [];
 
+    if (funcName.startsWith('StreamChannel_')) {
+      params.channelName = (this as StreamChannelInternal).channelName;
+      const json = params.toJSON?.call();
+      params.toJSON = function () {
+        return { ...json, channelName: params.channelName };
+      };
+      console.log(666, params);
+    }
+    // switch (funcName) {
+    //   case 'StreamChannel_join':
+    //     break;
+    // }
     if (funcName === 'RtmClient_initialize') {
       let config: RtmConfig = params.config;
       if (config.eventHandler) {

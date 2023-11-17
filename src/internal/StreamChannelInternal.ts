@@ -1,12 +1,15 @@
-import { IStreamChannel } from '../IAgoraStreamChannel';
 import { IStreamChannelImpl } from '../impl/IAgoraStreamChannelImpl';
 
 export class StreamChannelInternal extends IStreamChannelImpl {
-  private readonly _streamChannel: IStreamChannel;
+  private readonly _channelName: string = '';
 
-  constructor(streamChannel: IStreamChannel) {
+  constructor(channelName: string) {
     super();
-    this._streamChannel = streamChannel;
+    this._channelName = channelName;
+  }
+
+  get channelName(): string {
+    return this._channelName;
   }
 
   protected override getApiTypeFromPublishTopicMessageWithBuffer(): string {

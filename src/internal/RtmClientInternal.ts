@@ -18,8 +18,8 @@ export class RtmClientInternal extends IRtmClientImpl {
   }
 
   override createStreamChannel(channelName: string): IStreamChannel {
-    let streamChannel = super.createStreamChannel(channelName);
-    return new StreamChannelInternal(streamChannel);
+    super.createStreamChannel(channelName);
+    return new StreamChannelInternal(channelName);
   }
 
   override release(): number {

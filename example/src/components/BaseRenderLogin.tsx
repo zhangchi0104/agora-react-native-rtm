@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 
-import { AgoraButton, AgoraTextInput } from './ui';
+import { AgoraButton, AgoraStyle, AgoraTextInput } from './ui';
 
 export interface BaseRenderLoginProps {
   uid: string;
