@@ -93,6 +93,10 @@ export default function Login() {
     );
     return () => {
       client?.removeEventListener('onLoginResult', onLoginResult);
+      client?.removeEventListener(
+        'onConnectionStateChanged',
+        onConnectionStateChanged
+      );
     };
   }, [client, uid, onLoginResult, onConnectionStateChanged]);
 

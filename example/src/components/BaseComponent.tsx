@@ -1,30 +1,22 @@
-import {
-  IStreamChannel,
-  MessageEvent,
-  PresenceEvent,
-  RTM_ERROR_CODE,
-  RTM_MESSAGE_TYPE,
-  StorageEvent,
-  TopicEvent,
-} from 'agora-react-native-rtm';
+import { RTM_ERROR_CODE } from 'agora-react-native-rtm';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import {
-  AgoraButton,
-  AgoraCard,
-  AgoraDivider,
-  AgoraStyle,
-  AgoraText,
-  AgoraTextInput,
-  AgoraView,
-} from '../components/ui';
 import Config from '../config/agora.config';
 import { useRtmClient } from '../hooks/useRtmClient';
 import * as log from '../utils/log';
 
-export default function BaseComponent() {
+import { AgoraButton, AgoraStyle, AgoraTextInput, AgoraView } from './ui';
+
+interface Props {
+  onUidChanged?: (value: string) => void;
+  onChannelNameChanged?: (value: string) => void;
+}
+
+export default function BaseComponent({
+  onUidChanged,
+  onChannelNameChanged,
+}: Props) {
   const [loginSuccess, setLoginSuccess] = useState(false);
-  const [subscribeSuccess, setSubscribeSuccess] = useState(false);
   const [cName, setCName] = useState<string>(Config.channelName);
   const [uid, setUid] = useState<string>(Config.uid);
 
@@ -56,14 +48,6 @@ export default function BaseComponent() {
     };
   }, [client, uid]);
 
-  /**
-   * Step 5 : unsubscribe message channel
-   */
-  const unsubscribe = () => {
-    client.unsubscribe(Config.channelName);
-    setSubscribeSuccess(false);
-  };
-
   useEffect(() => {
     client.addEventListener('onLoginResult', onLoginResult);
 
@@ -83,7 +67,6 @@ export default function BaseComponent() {
    * Step 4 (Optional): logout
    */
   const logout = () => {
-    unsubscribe();
     client.logout();
     setLoginSuccess(false);
   };
@@ -93,10 +76,12 @@ export default function BaseComponent() {
       <AgoraTextInput
         onChangeText={(text) => {
           setUid(text);
+          onUidChanged?.(text);
         }}
         placeholder="please input userId"
         label="userId"
         value={uid}
+        disabled={loginSuccess}
       />
       <AgoraButton
         title={`${loginSuccess ? 'logout' : 'login'}`}
@@ -107,9 +92,12 @@ export default function BaseComponent() {
       <AgoraTextInput
         onChangeText={(text) => {
           setCName(text);
+          onChannelNameChanged?.(text);
         }}
+        label="channelName"
         placeholder="please input channelName"
         value={cName}
+        disabled={loginSuccess}
       />
     </AgoraView>
   );

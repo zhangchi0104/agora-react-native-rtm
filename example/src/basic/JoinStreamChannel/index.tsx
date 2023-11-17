@@ -1,16 +1,13 @@
 import {
   IStreamChannel,
+  RTM_CONNECTION_CHANGE_REASON,
+  RTM_CONNECTION_STATE,
   RTM_ERROR_CODE,
-  TopicEvent,
 } from 'agora-react-native-rtm';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import {
-  AgoraButton,
-  AgoraStyle,
-  AgoraText,
-  AgoraView,
-} from '../../components/ui';
+import BaseComponent from '../../components/BaseComponent';
+import { AgoraButton, AgoraStyle, AgoraView } from '../../components/ui';
 import Config from '../../config/agora.config';
 import { useRtmClient } from '../../hooks/useRtmClient';
 import * as log from '../../utils/log';
@@ -19,12 +16,8 @@ export default function JoinStreamChannel() {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [joinSuccess, setJoinSuccess] = useState(false);
   const [streamChannel, setStreamChannel] = useState<IStreamChannel>();
-  const [cName, setCName] = useState<string>('');
-
-  const onLoginResult = useCallback((errorCode: RTM_ERROR_CODE) => {
-    log.info('onLoginResult', 'errorCode', errorCode);
-    setLoginSuccess(errorCode === RTM_ERROR_CODE.RTM_ERROR_OK);
-  }, []);
+  const [cName, setCName] = useState<string>(Config.channelName);
+  const [uid, setUid] = useState<string>(Config.uid);
 
   const onJoinResult = useCallback(
     (
@@ -73,31 +66,10 @@ export default function JoinStreamChannel() {
     []
   );
 
-  const onTopicEvent = useCallback((event: TopicEvent) => {
-    log.info('onTopicEvent', 'event', event);
-  }, []);
-
   /**
    * Step 1: getRtmClient
    */
   const client = useRtmClient();
-
-  /**
-   * Step 2: initialize rtm client and login
-   */
-  useEffect(() => {
-    client.initialize({
-      userId: Config.uid,
-      appId: Config.appId,
-    });
-
-    client.login(Config.token);
-
-    return () => {
-      client.logout();
-      client.release();
-    };
-  }, [client]);
 
   /**
    * Step 3 : createStreamChannel
@@ -107,7 +79,7 @@ export default function JoinStreamChannel() {
       log.error('already joined channel');
       return;
     }
-    let result = client.createStreamChannel(Config.channelName);
+    let result = client.createStreamChannel(cName);
     setStreamChannel(result);
   };
 
@@ -141,40 +113,73 @@ export default function JoinStreamChannel() {
   /**
    * Step 6 : destroyStreamChannel
    */
-  const destroyStreamChannel = () => {
-    if (!streamChannel) {
-      log.error('no streamChannel');
-      return;
-    }
-    streamChannel.release();
+  const destroyStreamChannel = useCallback(() => {
+    streamChannel?.release();
     setStreamChannel(undefined);
-  };
-
-  useEffect(() => {
-    setCName(streamChannel?.getChannelName() || '');
-    return () => {
-      setCName(streamChannel?.getChannelName() || '');
-    };
   }, [streamChannel]);
 
   useEffect(() => {
-    client.addEventListener('onLoginResult', onLoginResult);
     client.addEventListener('onJoinResult', onJoinResult);
     client.addEventListener('onLeaveResult', onLeaveResult);
-    client.addEventListener('onTopicEvent', onTopicEvent);
 
     return () => {
-      client.removeEventListener('onLoginResult', onLoginResult);
       client.removeEventListener('onJoinResult', onJoinResult);
       client.removeEventListener('onLeaveResult', onLeaveResult);
-      client.removeEventListener('onTopicEvent', onTopicEvent);
     };
-  }, [client, onLoginResult, onJoinResult, onLeaveResult, onTopicEvent]);
+  }, [client, uid, onJoinResult, onLeaveResult]);
+
+  const onConnectionStateChanged = useCallback(
+    (
+      channelName: string,
+      state: RTM_CONNECTION_STATE,
+      reason: RTM_CONNECTION_CHANGE_REASON
+    ) => {
+      log.log(
+        'onConnectionStateChanged',
+        'channelName',
+        channelName,
+        'state',
+        state,
+        'reason',
+        reason
+      );
+      switch (state) {
+        case RTM_CONNECTION_STATE.RTM_CONNECTION_STATE_CONNECTED:
+          setLoginSuccess(true);
+          break;
+        case RTM_CONNECTION_STATE.RTM_CONNECTION_STATE_DISCONNECTED:
+          if (
+            reason ===
+            RTM_CONNECTION_CHANGE_REASON.RTM_CONNECTION_CHANGED_LOGOUT
+          ) {
+            setLoginSuccess(false);
+          }
+          destroyStreamChannel();
+          setJoinSuccess(false);
+          break;
+      }
+    },
+    [destroyStreamChannel]
+  );
+  useEffect(() => {
+    client?.addEventListener(
+      'onConnectionStateChanged',
+      onConnectionStateChanged
+    );
+    return () => {
+      client?.removeEventListener(
+        'onConnectionStateChanged',
+        onConnectionStateChanged
+      );
+    };
+  }, [client, uid, onConnectionStateChanged]);
 
   return (
     <AgoraView style={AgoraStyle.fullWidth}>
-      <AgoraText>{`current login userId:\n${Config.uid}`}</AgoraText>
-      <AgoraText>{`current streamChannelName:\n${cName}`}</AgoraText>
+      <BaseComponent
+        onChannelNameChanged={(v) => setCName(v)}
+        onUidChanged={(v) => setUid(v)}
+      />
       <AgoraButton
         disabled={!loginSuccess}
         title={`createStreamChannel`}
@@ -190,9 +195,19 @@ export default function JoinStreamChannel() {
         }}
       />
       <AgoraButton
+        disabled={!loginSuccess}
         title={`destroyStreamChannel`}
         onPress={() => {
           destroyStreamChannel();
+        }}
+      />
+      <AgoraButton
+        disabled={!streamChannel}
+        title={`getChannelName`}
+        onPress={() => {
+          if (streamChannel) {
+            log.alert(streamChannel.getChannelName());
+          }
         }}
       />
     </AgoraView>

@@ -1,20 +1,18 @@
 import {
-  IStreamChannel,
   MessageEvent,
   PresenceEvent,
+  RTM_CONNECTION_CHANGE_REASON,
+  RTM_CONNECTION_STATE,
   RTM_ERROR_CODE,
   RTM_MESSAGE_TYPE,
   StorageEvent,
-  TopicEvent,
 } from 'agora-react-native-rtm';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import BaseComponent from '../../components/BaseComponent';
 import {
   AgoraButton,
-  AgoraCard,
-  AgoraDivider,
   AgoraStyle,
-  AgoraText,
   AgoraTextInput,
   AgoraView,
 } from '../../components/ui';
@@ -30,11 +28,6 @@ export default function PublishMessage() {
   const [message, setMessage] = useState<string>('');
   const [publishRequestId, setPublishRequestId] = useState<number>(1);
   const [subscribeRequestId, setSubscribeRequestId] = useState<number>(2);
-
-  const onLoginResult = useCallback((errorCode: RTM_ERROR_CODE) => {
-    log.log('onLoginResult', 'errorCode', errorCode);
-    setLoginSuccess(errorCode === RTM_ERROR_CODE.RTM_ERROR_OK);
-  }, []);
 
   const onStorageEvent = useCallback((event: StorageEvent) => {
     log.log('onStorageEvent', 'event', event);
@@ -70,29 +63,11 @@ export default function PublishMessage() {
   const client = useRtmClient();
 
   /**
-   * Step 2: initialize rtm client and login
-   */
-  useEffect(() => {
-    if (!uid || uid.length === 0) {
-      return;
-    }
-    client.initialize({
-      userId: uid,
-      appId: Config.appId,
-    });
-
-    return () => {
-      setLoginSuccess(false);
-      client.release();
-    };
-  }, [client, uid]);
-
-  /**
    * Step 3 : publish message to message channel
    */
   const publish = () => {
     let result = client.publish(
-      Config.channelName,
+      cName,
       message,
       message.length,
       {
@@ -129,14 +104,12 @@ export default function PublishMessage() {
   };
 
   useEffect(() => {
-    client.addEventListener('onLoginResult', onLoginResult);
     client.addEventListener('onStorageEvent', onStorageEvent);
     client.addEventListener('onSubscribeResult', onSubscribeResult);
     client.addEventListener('onPresenceEvent', onPresenceEvent);
     client.addEventListener('onMessageEvent', onMessageEvent);
 
     return () => {
-      client.removeEventListener('onLoginResult', onLoginResult);
       client.removeEventListener('onStorageEvent', onStorageEvent);
       client.removeEventListener('onSubscribeResult', onSubscribeResult);
       client.removeEventListener('onPresenceEvent', onPresenceEvent);
@@ -145,49 +118,75 @@ export default function PublishMessage() {
   }, [
     client,
     uid,
-    onLoginResult,
     onStorageEvent,
     onSubscribeResult,
     onPresenceEvent,
     onMessageEvent,
   ]);
 
-  /**
-   * Step 3: login to rtm
-   */
-  const login = () => {
-    client.login(Config.token);
-  };
-
-  /**
-   * Step 4 (Optional): logout
-   */
-  const logout = () => {
-    unsubscribe();
-    client.logout();
-    setLoginSuccess(false);
-  };
+  const onConnectionStateChanged = useCallback(
+    (
+      channelName: string,
+      state: RTM_CONNECTION_STATE,
+      reason: RTM_CONNECTION_CHANGE_REASON
+    ) => {
+      log.log(
+        'onConnectionStateChanged',
+        'channelName',
+        channelName,
+        'state',
+        state,
+        'reason',
+        reason
+      );
+      switch (state) {
+        case RTM_CONNECTION_STATE.RTM_CONNECTION_STATE_CONNECTED:
+          setLoginSuccess(true);
+          break;
+        case RTM_CONNECTION_STATE.RTM_CONNECTION_STATE_DISCONNECTED:
+          if (
+            reason ===
+            RTM_CONNECTION_CHANGE_REASON.RTM_CONNECTION_CHANGED_LOGOUT
+          ) {
+            setLoginSuccess(false);
+          }
+          setSubscribeSuccess(false);
+          break;
+      }
+    },
+    []
+  );
+  useEffect(() => {
+    client?.addEventListener(
+      'onConnectionStateChanged',
+      onConnectionStateChanged
+    );
+    return () => {
+      client?.removeEventListener(
+        'onConnectionStateChanged',
+        onConnectionStateChanged
+      );
+    };
+  }, [client, uid, onConnectionStateChanged]);
 
   return (
     <AgoraView style={AgoraStyle.fullWidth}>
-      <AgoraTextInput
-        onChangeText={(text) => {
-          setUid(text);
-        }}
-        placeholder="please input userId"
-        label="userId"
-        value={uid}
+      <BaseComponent
+        onChannelNameChanged={(v) => setCName(v)}
+        onUidChanged={(v) => setUid(v)}
       />
       <AgoraButton
-        title={`${loginSuccess ? 'logout' : 'login'}`}
+        disabled={!loginSuccess}
+        title={`${subscribeSuccess ? 'unsubscribe' : 'subscribe'}`}
         onPress={() => {
-          loginSuccess ? logout() : login();
+          subscribeSuccess ? unsubscribe() : subscribe();
         }}
       />
       <AgoraTextInput
         onChangeText={(text) => {
           setMessage(text);
         }}
+        label="message"
         placeholder="please input message"
         value={message}
       />
@@ -196,20 +195,6 @@ export default function PublishMessage() {
         title={`publish message`}
         onPress={() => {
           publish();
-        }}
-      />
-      <AgoraTextInput
-        onChangeText={(text) => {
-          setCName(text);
-        }}
-        placeholder="please input channelName"
-        value={cName}
-      />
-      <AgoraButton
-        disabled={!loginSuccess}
-        title={`${subscribeSuccess ? 'unsubscribe' : 'subscribe'}`}
-        onPress={() => {
-          subscribeSuccess ? unsubscribe() : subscribe();
         }}
       />
     </AgoraView>
