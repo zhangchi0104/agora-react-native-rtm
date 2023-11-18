@@ -155,7 +155,7 @@ export class IStreamChannelImpl implements IStreamChannel {
 
   subscribeTopic(
     topic: string,
-    options: TopicOptions,
+    options?: TopicOptions,
     requestId?: number
   ): number {
     const apiType = this.getApiTypeFromSubscribeTopic();
@@ -179,7 +179,7 @@ export class IStreamChannelImpl implements IStreamChannel {
     return 'StreamChannel_subscribeTopic';
   }
 
-  unsubscribeTopic(topic: string, options: TopicOptions): number {
+  unsubscribeTopic(topic: string, options?: TopicOptions): number {
     const apiType = this.getApiTypeFromUnsubscribeTopic();
     const jsonParams = {
       topic: topic,

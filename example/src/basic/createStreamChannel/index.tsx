@@ -14,7 +14,7 @@ import Config from '../../config/agora.config';
 import { useRtmClient } from '../../hooks/useRtmClient';
 import * as log from '../../utils/log';
 
-export default function JoinStreamChannel() {
+export default function CreateStreamChannel() {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [joinSuccess, setJoinSuccess] = useState(false);
   const [streamChannel, setStreamChannel] = useState<IStreamChannel>();
@@ -39,7 +39,6 @@ export default function JoinStreamChannel() {
         'errorCode',
         errorCode
       );
-      setCName(channelName);
       setJoinSuccess(errorCode === RTM_ERROR_CODE.RTM_ERROR_OK);
     },
     []
@@ -152,8 +151,8 @@ export default function JoinStreamChannel() {
             RTM_CONNECTION_CHANGE_REASON.RTM_CONNECTION_CHANGED_LOGOUT
           ) {
             setLoginSuccess(false);
+            destroyStreamChannel();
           }
-          destroyStreamChannel();
           setJoinSuccess(false);
           break;
       }
@@ -185,23 +184,18 @@ export default function JoinStreamChannel() {
         />
         <AgoraButton
           disabled={!loginSuccess}
-          title={`createStreamChannel`}
+          title={`${
+            streamChannel ? 'destroyStreamChannel' : 'createStreamChannel'
+          }`}
           onPress={() => {
-            createStreamChannel();
+            streamChannel ? destroyStreamChannel() : createStreamChannel();
           }}
         />
         <AgoraButton
-          disabled={!loginSuccess}
-          title={`${joinSuccess ? 'leave' : 'join'}`}
+          disabled={!loginSuccess || !streamChannel}
+          title={`${joinSuccess ? 'leaveChannel' : 'joinChannel'}`}
           onPress={() => {
             joinSuccess ? leave() : join();
-          }}
-        />
-        <AgoraButton
-          disabled={!loginSuccess}
-          title={`destroyStreamChannel`}
-          onPress={() => {
-            destroyStreamChannel();
           }}
         />
         <AgoraButton

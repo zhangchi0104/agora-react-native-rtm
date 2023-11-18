@@ -30,5 +30,7 @@
   "agora::rtm::IStreamChannel.leave.requestId",
   "agora::rtm::IStreamChannel.joinTopic.requestId",
   "agora::rtm::IStreamChannel.leaveTopic.requestId",
-  "agora::rtm::IStreamChannel.subscribeTopic.requestId"
+  "agora::rtm::IStreamChannel.subscribeTopic.requestId",
+  "agora::rtm::IStreamChannel.subscribeTopic.options",
+  "agora::rtm::IStreamChannel.unsubscribeTopic.options"
 ]

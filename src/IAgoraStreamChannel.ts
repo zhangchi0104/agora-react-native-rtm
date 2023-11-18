@@ -72,10 +72,10 @@ export abstract class IStreamChannel {
   abstract leaveTopic(topic: string, requestId?: number): number;
   abstract subscribeTopic(
     topic: string,
-    options: TopicOptions,
+    options?: TopicOptions,
     requestId?: number
   ): number;
-  abstract unsubscribeTopic(topic: string, options: TopicOptions): number;
+  abstract unsubscribeTopic(topic: string, options?: TopicOptions): number;
   abstract getSubscribedUserList(topic: string, users: UserList[]): number;
   abstract release(): number;
   abstract publishTopicMessageWithBuffer(

@@ -149,7 +149,10 @@ export function callIrisApi(this: any, funcName: string, params: any): any {
         return { ...json, channelName: params.channelName };
       };
     }
-    if (funcName === 'RtmClient_publish') {
+    if (
+      funcName === 'RtmClient_publish' ||
+      funcName === 'StreamChannel_publishTopicMessage'
+    ) {
       if (typeof params.message === 'string') {
         let buffer = base64.fromByteArray(
           Buffer.from(params.message ?? '') ?? Buffer.from('')

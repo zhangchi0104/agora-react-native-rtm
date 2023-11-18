@@ -30,7 +30,7 @@ export default function PublishMessage() {
   const onSubscribeResult = useCallback(
     (requestId: number, channelName: string, errorCode: RTM_ERROR_CODE) => {
       log.log(
-        'onStorageEvent',
+        'onSubscribeResult',
         'requestId',
         requestId,
         'channelName',
@@ -44,7 +44,7 @@ export default function PublishMessage() {
   );
 
   const onPresenceEvent = useCallback((event: PresenceEvent) => {
-    log.log('onStoragonPresenceEventeEvent', 'event', event);
+    log.log('onPresenceEvent', 'event', event);
   }, []);
 
   const onPublishResult = useCallback(
@@ -89,12 +89,16 @@ export default function PublishMessage() {
    * Step 2 : publish message to message channel
    */
   const publish = useCallback(
-    (msg: string) => {
+    (msg: string, msgs: any) => {
       let result = client.publish(cName, msg, msg.length, {
         type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING,
       });
       if (result !== RTM_ERROR_CODE.RTM_ERROR_OK) {
         log.error('CHANNEL_INVALID_MESSAGE', result);
+      } else {
+        setMessages((previousMessages) =>
+          GiftedChat.append(previousMessages, msgs)
+        );
       }
     },
     [cName, client]
@@ -108,12 +112,8 @@ export default function PublishMessage() {
       }
 
       msgs.forEach((message: any) => {
-        publish(message.text);
+        publish(message.text, msgs);
       });
-
-      setMessages((previousMessages) =>
-        GiftedChat.append(previousMessages, msgs)
-      );
     },
     [loginSuccess, publish]
   );
