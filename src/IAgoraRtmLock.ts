@@ -13,37 +13,37 @@ export abstract class IRtmLock {
     channelType: RTM_CHANNEL_TYPE,
     lockName: string,
     ttl: number,
-    requestId: number
+    requestId?: number
   ): number;
   abstract getLocks(
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
-    requestId: number
+    requestId?: number
   ): number;
   abstract removeLock(
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
     lockName: string,
-    requestId: number
+    requestId?: number
   ): number;
   abstract acquireLock(
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
     lockName: string,
     retry: boolean,
-    requestId: number
+    requestId?: number
   ): number;
   abstract releaseLock(
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
     lockName: string,
-    requestId: number
+    requestId?: number
   ): number;
   abstract revokeLock(
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
     lockName: string,
     owner: string,
-    requestId: number
+    requestId?: number
   ): number;
 }

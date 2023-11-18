@@ -35,7 +35,7 @@ export abstract class IRtmStorage {
     data: IMetadata[],
     options: MetadataOptions,
     lockName: string,
-    requestId: number
+    requestId?: number
   ): number;
   abstract updateChannelMetadata(
     channelName: string,
@@ -43,7 +43,7 @@ export abstract class IRtmStorage {
     data: IMetadata[],
     options: MetadataOptions,
     lockName: string,
-    requestId: number
+    requestId?: number
   ): number;
   abstract removeChannelMetadata(
     channelName: string,
@@ -51,32 +51,32 @@ export abstract class IRtmStorage {
     data: IMetadata[],
     options: MetadataOptions,
     lockName: string,
-    requestId: number
+    requestId?: number
   ): number;
   abstract getChannelMetadata(
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
-    requestId: number
+    requestId?: number
   ): number;
   abstract setUserMetadata(
     userId: string,
     data: IMetadata[],
     options: MetadataOptions,
-    requestId: number
+    requestId?: number
   ): number;
   abstract updateUserMetadata(
     userId: string,
     data: IMetadata[],
     options: MetadataOptions,
-    requestId: number
+    requestId?: number
   ): number;
   abstract removeUserMetadata(
     userId: string,
     data: IMetadata[],
     options: MetadataOptions,
-    requestId: number
+    requestId?: number
   ): number;
-  abstract getUserMetadata(userId: string, requestId: number): number;
-  abstract subscribeUserMetadata(userId: string, requestId: number): number;
+  abstract getUserMetadata(userId: string, requestId?: number): number;
+  abstract subscribeUserMetadata(userId: string, requestId?: number): number;
   abstract unsubscribeUserMetadata(userId: string): number;
 }

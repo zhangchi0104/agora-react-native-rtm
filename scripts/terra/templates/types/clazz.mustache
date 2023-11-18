@@ -21,7 +21,7 @@ export interface {{name}} {{#base_clazzs}}extends {{.}}{{/base_clazzs}}{
 {{/user_data.hasComment}}
 export abstract class {{name}}{
 {{#methods}}
-  abstract {{name}}({{#parameters}}{{name}}: {{type.source}},{{/parameters}}): {{return_type.source}};
+  abstract {{name}}({{#parameters}}{{name}}{{#user_data.isOptional}}?{{/user_data.isOptional}}: {{type.source}},{{/parameters}}): {{return_type.source}};
 {{/methods}}
 }
 {{/user_data.isCallback}}

@@ -6,13 +6,13 @@ import { ParseResult, TerraContext } from '@agoraio-extensions/terra-core';
 
 import { renderWithConfiguration } from '@agoraio-extensions/terra_shared_configs';
 
-// import * as bindingExtensionList from './config/binding_extension_list.json';
-
 import {
   appendNumberToDuplicateMemberFunction,
   filterFile,
   isMatch,
 } from './utils';
+
+const paramOptionalList = require('./config/param_optional_list.json');
 
 interface CXXFileUserData {
   fileName: string;
@@ -68,6 +68,12 @@ export function impl(parseResult: ParseResult) {
           bindingIrisKey: `${node.asClazz().name.slice(1)}_${method.name}`,
         };
         method.user_data = clazzMethodUserData;
+        method.asMemberFunction().parameters.map((param) => {
+          const clazzMethodParametersUserData = {
+            isOptional: paramOptionalList.includes(param.fullName),
+          };
+          param.user_data = clazzMethodParametersUserData;
+        });
       });
 
       const terraNodeUserData: TerraNodeUserData = {

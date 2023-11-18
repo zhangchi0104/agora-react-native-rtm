@@ -417,7 +417,7 @@ export class IChannelImpl implements IChannel {
 
   updateAttributes(
     attributes: IChannelAttributes[],
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromUpdateAttributes();
     const jsonParams = {
@@ -440,7 +440,7 @@ export class IChannelImpl implements IChannel {
 
   deleteAttributes(
     attributes: IChannelAttributes[],
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromDeleteAttributes();
     const jsonParams = {

@@ -15,7 +15,7 @@ export class IRtmPresenceImpl implements IRtmPresence {
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
     options: PresenceOptions,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromWhoNow();
     const jsonParams = {
@@ -40,7 +40,7 @@ export class IRtmPresenceImpl implements IRtmPresence {
     return 'RtmPresence_whoNow';
   }
 
-  whereNow(userId: string, requestId: number): number {
+  whereNow(userId: string, requestId?: number): number {
     const apiType = this.getApiTypeFromWhereNow();
     const jsonParams = {
       userId: userId,
@@ -65,7 +65,7 @@ export class IRtmPresenceImpl implements IRtmPresence {
     channelType: RTM_CHANNEL_TYPE,
     items: StateItem[],
     count: number,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromSetState();
     const jsonParams = {
@@ -97,7 +97,7 @@ export class IRtmPresenceImpl implements IRtmPresence {
     channelType: RTM_CHANNEL_TYPE,
     keys: string[],
     count: number,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromRemoveState();
     const jsonParams = {
@@ -128,7 +128,7 @@ export class IRtmPresenceImpl implements IRtmPresence {
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
     userId: string,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromGetState();
     const jsonParams = {
@@ -157,7 +157,7 @@ export class IRtmPresenceImpl implements IRtmPresence {
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
     options: GetOnlineUsersOptions,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromGetOnlineUsers();
     const jsonParams = {
@@ -182,7 +182,7 @@ export class IRtmPresenceImpl implements IRtmPresence {
     return 'RtmPresence_getOnlineUsers';
   }
 
-  getUserChannels(userId: string, requestId: number): number {
+  getUserChannels(userId: string, requestId?: number): number {
     const apiType = this.getApiTypeFromGetUserChannels();
     const jsonParams = {
       userId: userId,

@@ -16,6 +16,8 @@ import {
   isMatch,
 } from './utils';
 
+const paramOptionalList = require('./config/param_optional_list.json');
+
 interface CXXFileUserData {
   fileName: string;
 }
@@ -82,6 +84,12 @@ export default function (
               .replace(/\n/g, '\n* '),
           };
           method.user_data = clazzMethodUserData;
+          method.asMemberFunction().parameters.map((param) => {
+            const clazzMethodParametersUserData = {
+              isOptional: paramOptionalList.includes(param.fullName),
+            };
+            param.user_data = clazzMethodParametersUserData;
+          });
         });
       }
 

@@ -184,11 +184,11 @@ export abstract class IChannel {
   abstract sendMessage(message: IMessage[]): number;
   abstract updateAttributes(
     attributes: IChannelAttributes[],
-    requestId: number
+    requestId?: number
   ): number;
   abstract deleteAttributes(
     attributes: IChannelAttributes[],
-    requestId: number
+    requestId?: number
   ): number;
   abstract getId(): string;
   abstract release(): number;

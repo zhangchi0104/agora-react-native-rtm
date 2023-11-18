@@ -470,7 +470,7 @@ export class IRtmClientImpl implements IRtmClient {
     message: string,
     length: number,
     option: PublishOptions,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromPublish();
     const jsonParams = {
@@ -500,7 +500,7 @@ export class IRtmClientImpl implements IRtmClient {
   subscribe(
     channelName: string,
     options: SubscribeOptions,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromSubscribe();
     const jsonParams = {

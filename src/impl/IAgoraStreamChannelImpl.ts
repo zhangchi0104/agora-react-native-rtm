@@ -11,7 +11,7 @@ import { callIrisApi } from '../index';
 
 // @ts-ignore
 export class IStreamChannelImpl implements IStreamChannel {
-  join(options: JoinChannelOptions, requestId: number): number {
+  join(options: JoinChannelOptions, requestId?: number): number {
     const apiType = this.getApiTypeFromJoin();
     const jsonParams = {
       options: options,
@@ -49,7 +49,7 @@ export class IStreamChannelImpl implements IStreamChannel {
     return 'StreamChannel_renewToken';
   }
 
-  leave(requestId: number): number {
+  leave(requestId?: number): number {
     const apiType = this.getApiTypeFromLeave();
     const jsonParams = {
       requestId: requestId,
@@ -81,7 +81,7 @@ export class IStreamChannelImpl implements IStreamChannel {
   joinTopic(
     topic: string,
     options: JoinTopicOptions,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromJoinTopic();
     const jsonParams = {
@@ -133,7 +133,7 @@ export class IStreamChannelImpl implements IStreamChannel {
     return 'StreamChannel_publishTopicMessage';
   }
 
-  leaveTopic(topic: string, requestId: number): number {
+  leaveTopic(topic: string, requestId?: number): number {
     const apiType = this.getApiTypeFromLeaveTopic();
     const jsonParams = {
       topic: topic,
@@ -156,7 +156,7 @@ export class IStreamChannelImpl implements IStreamChannel {
   subscribeTopic(
     topic: string,
     options: TopicOptions,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromSubscribeTopic();
     const jsonParams = {

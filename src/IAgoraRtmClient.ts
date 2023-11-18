@@ -326,12 +326,12 @@ export abstract class IRtmClient {
     message: string,
     length: number,
     option: PublishOptions,
-    requestId: number
+    requestId?: number
   ): number;
   abstract subscribe(
     channelName: string,
     options: SubscribeOptions,
-    requestId: number
+    requestId?: number
   ): number;
   abstract unsubscribe(channelName: string): number;
   abstract createStreamChannel(channelName: string): IStreamChannel;

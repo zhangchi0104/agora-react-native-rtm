@@ -17,34 +17,34 @@ export abstract class IRtmPresence {
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
     options: PresenceOptions,
-    requestId: number
+    requestId?: number
   ): number;
-  abstract whereNow(userId: string, requestId: number): number;
+  abstract whereNow(userId: string, requestId?: number): number;
   abstract setState(
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
     items: StateItem[],
     count: number,
-    requestId: number
+    requestId?: number
   ): number;
   abstract removeState(
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
     keys: string[],
     count: number,
-    requestId: number
+    requestId?: number
   ): number;
   abstract getState(
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
     userId: string,
-    requestId: number
+    requestId?: number
   ): number;
   abstract getOnlineUsers(
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
     options: GetOnlineUsersOptions,
-    requestId: number
+    requestId?: number
   ): number;
-  abstract getUserChannels(userId: string, requestId: number): number;
+  abstract getUserChannels(userId: string, requestId?: number): number;
 }

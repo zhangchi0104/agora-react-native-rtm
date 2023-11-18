@@ -120,7 +120,7 @@ export class IRtmStorageImpl implements IRtmStorage {
     data: IMetadata[],
     options: MetadataOptions,
     lockName: string,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromSetChannelMetadata();
     const jsonParams = {
@@ -155,7 +155,7 @@ export class IRtmStorageImpl implements IRtmStorage {
     data: IMetadata[],
     options: MetadataOptions,
     lockName: string,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromUpdateChannelMetadata();
     const jsonParams = {
@@ -190,7 +190,7 @@ export class IRtmStorageImpl implements IRtmStorage {
     data: IMetadata[],
     options: MetadataOptions,
     lockName: string,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromRemoveChannelMetadata();
     const jsonParams = {
@@ -222,7 +222,7 @@ export class IRtmStorageImpl implements IRtmStorage {
   getChannelMetadata(
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromGetChannelMetadata();
     const jsonParams = {
@@ -249,7 +249,7 @@ export class IRtmStorageImpl implements IRtmStorage {
     userId: string,
     data: IMetadata[],
     options: MetadataOptions,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromSetUserMetadata();
     const jsonParams = {
@@ -278,7 +278,7 @@ export class IRtmStorageImpl implements IRtmStorage {
     userId: string,
     data: IMetadata[],
     options: MetadataOptions,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromUpdateUserMetadata();
     const jsonParams = {
@@ -307,7 +307,7 @@ export class IRtmStorageImpl implements IRtmStorage {
     userId: string,
     data: IMetadata[],
     options: MetadataOptions,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromRemoveUserMetadata();
     const jsonParams = {
@@ -332,7 +332,7 @@ export class IRtmStorageImpl implements IRtmStorage {
     return 'RtmStorage_removeUserMetadata';
   }
 
-  getUserMetadata(userId: string, requestId: number): number {
+  getUserMetadata(userId: string, requestId?: number): number {
     const apiType = this.getApiTypeFromGetUserMetadata();
     const jsonParams = {
       userId: userId,
@@ -352,7 +352,7 @@ export class IRtmStorageImpl implements IRtmStorage {
     return 'RtmStorage_getUserMetadata';
   }
 
-  subscribeUserMetadata(userId: string, requestId: number): number {
+  subscribeUserMetadata(userId: string, requestId?: number): number {
     const apiType = this.getApiTypeFromSubscribeUserMetadata();
     const jsonParams = {
       userId: userId,

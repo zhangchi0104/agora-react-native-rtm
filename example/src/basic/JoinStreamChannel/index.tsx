@@ -74,7 +74,7 @@ export default function JoinStreamChannel() {
   const client = useRtmClient();
 
   /**
-   * Step 3 : createStreamChannel
+   * Step 2 : createStreamChannel
    */
   const createStreamChannel = () => {
     if (joinSuccess) {
@@ -86,25 +86,22 @@ export default function JoinStreamChannel() {
   };
 
   /**
-   * Step 4 : join
+   * Step 3 : join
    */
   const join = () => {
     if (!streamChannel) {
       log.error('please create streamChannel first');
       return;
     }
-    streamChannel.join(
-      {
-        token: Config.appId,
-        withMetadata: true,
-        withPresence: true,
-      },
-      1
-    );
+    streamChannel.join({
+      token: Config.appId,
+      withMetadata: true,
+      withPresence: true,
+    });
   };
 
   /**
-   * Step 5 : leave
+   * Step 4 : leave
    */
   const leave = () => {
     if (streamChannel) {
@@ -113,7 +110,7 @@ export default function JoinStreamChannel() {
   };
 
   /**
-   * Step 6 : destroyStreamChannel
+   * Step 5 : destroyStreamChannel
    */
   const destroyStreamChannel = useCallback(() => {
     streamChannel?.release();

@@ -21,8 +21,6 @@ export default function PublishMessage() {
   const [subscribeSuccess, setSubscribeSuccess] = useState(false);
   const [cName, setCName] = useState<string>(Config.channelName);
   const [uid, setUid] = useState<string>(Config.uid);
-  const [publishRequestId, setPublishRequestId] = useState<number>(1);
-  const [subscribeRequestId, setSubscribeRequestId] = useState<number>(2);
   const [messages, setMessages] = useState<any[]>([]);
 
   const onStorageEvent = useCallback((event: StorageEvent) => {
@@ -48,6 +46,19 @@ export default function PublishMessage() {
   const onPresenceEvent = useCallback((event: PresenceEvent) => {
     log.log('onStoragonPresenceEventeEvent', 'event', event);
   }, []);
+
+  const onPublishResult = useCallback(
+    (requestId: number, errorCode: RTM_ERROR_CODE) => {
+      log.log(
+        'onPublishResult',
+        'requestId',
+        requestId,
+        'errorCode',
+        errorCode
+      );
+    },
+    []
+  );
 
   const onMessageEvent = useCallback(
     (event: MessageEvent) => {
@@ -79,20 +90,14 @@ export default function PublishMessage() {
    */
   const publish = useCallback(
     (msg: string) => {
-      let result = client.publish(
-        cName,
-        msg,
-        msg.length,
-        {
-          type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING,
-        },
-        publishRequestId
-      );
+      let result = client.publish(cName, msg, msg.length, {
+        type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING,
+      });
       if (result !== RTM_ERROR_CODE.RTM_ERROR_OK) {
         log.error('CHANNEL_INVALID_MESSAGE', result);
       }
     },
-    [cName, client, publishRequestId]
+    [cName, client]
   );
 
   const onSend = useCallback(
@@ -117,15 +122,11 @@ export default function PublishMessage() {
    * Step 3(optional) : subscribe message channel
    */
   const subscribe = () => {
-    client.subscribe(
-      Config.channelName,
-      {
-        withMessage: true,
-        withMetadata: true,
-        withPresence: true,
-      },
-      subscribeRequestId
-    );
+    client.subscribe(Config.channelName, {
+      withMessage: true,
+      withMetadata: true,
+      withPresence: true,
+    });
   };
 
   /**
@@ -141,12 +142,14 @@ export default function PublishMessage() {
     client.addEventListener('onSubscribeResult', onSubscribeResult);
     client.addEventListener('onPresenceEvent', onPresenceEvent);
     client.addEventListener('onMessageEvent', onMessageEvent);
+    client.addEventListener('onPublishResult', onPublishResult);
 
     return () => {
       client.removeEventListener('onStorageEvent', onStorageEvent);
       client.removeEventListener('onSubscribeResult', onSubscribeResult);
       client.removeEventListener('onPresenceEvent', onPresenceEvent);
       client.removeEventListener('onMessageEvent', onMessageEvent);
+      client.removeEventListener('onPublishResult', onPublishResult);
     };
   }, [
     client,
@@ -155,6 +158,7 @@ export default function PublishMessage() {
     onSubscribeResult,
     onPresenceEvent,
     onMessageEvent,
+    onPublishResult,
   ]);
 
   const onConnectionStateChanged = useCallback(

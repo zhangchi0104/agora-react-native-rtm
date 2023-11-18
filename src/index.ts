@@ -2,8 +2,6 @@ import { IRtmClient } from './IAgoraRtmClient';
 
 import { RtmClientInternal } from './internal/RtmClientInternal';
 
-import { isDebuggable } from './index';
-
 export * from './AgoraRtmBase';
 export * from './IAgoraRtmClient';
 export * from './IAgoraRtmLock';

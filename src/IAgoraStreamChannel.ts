@@ -54,14 +54,14 @@ export class TopicOptions {
  * This class provides the stream channel methods that can be invoked by your app.
  */
 export abstract class IStreamChannel {
-  abstract join(options: JoinChannelOptions, requestId: number): number;
+  abstract join(options: JoinChannelOptions, requestId?: number): number;
   abstract renewToken(token: string): number;
-  abstract leave(requestId: number): number;
+  abstract leave(requestId?: number): number;
   abstract getChannelName(): string;
   abstract joinTopic(
     topic: string,
     options: JoinTopicOptions,
-    requestId: number
+    requestId?: number
   ): number;
   abstract publishTopicMessage(
     topic: string,
@@ -69,11 +69,11 @@ export abstract class IStreamChannel {
     length: number,
     option: PublishOptions
   ): number;
-  abstract leaveTopic(topic: string, requestId: number): number;
+  abstract leaveTopic(topic: string, requestId?: number): number;
   abstract subscribeTopic(
     topic: string,
     options: TopicOptions,
-    requestId: number
+    requestId?: number
   ): number;
   abstract unsubscribeTopic(topic: string, options: TopicOptions): number;
   abstract getSubscribedUserList(topic: string, users: UserList[]): number;

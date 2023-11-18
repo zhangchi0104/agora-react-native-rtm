@@ -11,7 +11,7 @@ export class IRtmLockImpl implements IRtmLock {
     channelType: RTM_CHANNEL_TYPE,
     lockName: string,
     ttl: number,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromSetLock();
     const jsonParams = {
@@ -41,7 +41,7 @@ export class IRtmLockImpl implements IRtmLock {
   getLocks(
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromGetLocks();
     const jsonParams = {
@@ -68,7 +68,7 @@ export class IRtmLockImpl implements IRtmLock {
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
     lockName: string,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromRemoveLock();
     const jsonParams = {
@@ -98,7 +98,7 @@ export class IRtmLockImpl implements IRtmLock {
     channelType: RTM_CHANNEL_TYPE,
     lockName: string,
     retry: boolean,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromAcquireLock();
     const jsonParams = {
@@ -129,7 +129,7 @@ export class IRtmLockImpl implements IRtmLock {
     channelName: string,
     channelType: RTM_CHANNEL_TYPE,
     lockName: string,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromReleaseLock();
     const jsonParams = {
@@ -159,7 +159,7 @@ export class IRtmLockImpl implements IRtmLock {
     channelType: RTM_CHANNEL_TYPE,
     lockName: string,
     owner: string,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromRevokeLock();
     const jsonParams = {

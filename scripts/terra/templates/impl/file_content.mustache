@@ -24,7 +24,7 @@ export class {{name}}Impl implements {{name}}{
 {{#methods}}
   {{name}}(
     {{#parameters}}
-    {{name}}: {{type.source}},
+    {{name}}{{#user_data.isOptional}}?{{/user_data.isOptional}}: {{type.source}},
     {{/parameters}}
     ): {{return_type.source}} {
     const apiType = this.{{user_data.bindingFunctionName}}();
