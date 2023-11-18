@@ -35,14 +35,30 @@ import { IStreamChannel } from './IAgoraStreamChannel';
 export class RtmConfig {
   appId?: string;
   userId?: string;
-  areaCode?: RTM_AREA_CODE;
-  presenceTimeout?: number;
+  areaCode?: RTM_AREA_CODE = RTM_AREA_CODE.RTM_AREA_CODE_GLOB;
+  presenceTimeout?: number = 300;
   context?: void[];
-  useStringUserId?: boolean;
+  useStringUserId?: boolean = true;
   eventHandler?: IRtmEventHandler;
   logConfig?: RtmLogConfig;
   proxyConfig?: RtmProxyConfig;
   encryptionConfig?: RtmEncryptionConfig;
+  constructor(
+    props?: Partial<{
+      appId?: string;
+      userId?: string;
+      areaCode?: RTM_AREA_CODE;
+      presenceTimeout?: number;
+      context?: void[];
+      useStringUserId?: boolean;
+      eventHandler?: IRtmEventHandler;
+      logConfig?: RtmLogConfig;
+      proxyConfig?: RtmProxyConfig;
+      encryptionConfig?: RtmEncryptionConfig;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 export class MessageEvent {
@@ -54,6 +70,20 @@ export class MessageEvent {
   messageLength?: number;
   publisher?: string;
   customType?: string;
+  constructor(
+    props?: Partial<{
+      channelType?: RTM_CHANNEL_TYPE;
+      messageType?: RTM_MESSAGE_TYPE;
+      channelName?: string;
+      channelTopic?: string;
+      message?: string;
+      messageLength?: number;
+      publisher?: string;
+      customType?: string;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 export class IntervalInfo {
@@ -62,6 +92,17 @@ export class IntervalInfo {
   timeoutUserList?: UserList;
   userStateList?: UserState[];
   userStateCount?: number;
+  constructor(
+    props?: Partial<{
+      joinUserList?: UserList;
+      leaveUserList?: UserList;
+      timeoutUserList?: UserList;
+      userStateList?: UserState[];
+      userStateCount?: number;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 export class TopicEvent {
@@ -70,11 +111,30 @@ export class TopicEvent {
   publisher?: string;
   topicInfos?: TopicInfo[];
   topicInfoCount?: number;
+  constructor(
+    props?: Partial<{
+      type?: RTM_TOPIC_EVENT_TYPE;
+      channelName?: string;
+      publisher?: string;
+      topicInfos?: TopicInfo[];
+      topicInfoCount?: number;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 export class SnapshotInfo {
   userStateList?: UserState[];
   userCount?: number;
+  constructor(
+    props?: Partial<{
+      userStateList?: UserState[];
+      userCount?: number;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 export class PresenceEvent {
@@ -86,6 +146,20 @@ export class PresenceEvent {
   stateItemCount?: number;
   interval?: IntervalInfo;
   snapshot?: SnapshotInfo;
+  constructor(
+    props?: Partial<{
+      type?: RTM_PRESENCE_EVENT_TYPE;
+      channelType?: RTM_CHANNEL_TYPE;
+      channelName?: string;
+      publisher?: string;
+      stateItems?: StateItem[];
+      stateItemCount?: number;
+      interval?: IntervalInfo;
+      snapshot?: SnapshotInfo;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 export class LockEvent {
@@ -94,6 +168,17 @@ export class LockEvent {
   channelName?: string;
   lockDetailList?: LockDetail[];
   count?: number;
+  constructor(
+    props?: Partial<{
+      channelType?: RTM_CHANNEL_TYPE;
+      eventType?: RTM_LOCK_EVENT_TYPE;
+      channelName?: string;
+      lockDetailList?: LockDetail[];
+      count?: number;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 export class StorageEvent {
@@ -102,6 +187,17 @@ export class StorageEvent {
   eventType?: RTM_STORAGE_EVENT_TYPE;
   target?: string;
   data?: IMetadata[];
+  constructor(
+    props?: Partial<{
+      channelType?: RTM_CHANNEL_TYPE;
+      storageType?: RTM_STORAGE_TYPE;
+      eventType?: RTM_STORAGE_EVENT_TYPE;
+      target?: string;
+      data?: IMetadata[];
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**

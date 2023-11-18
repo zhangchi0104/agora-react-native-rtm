@@ -25,19 +25,40 @@ export enum RTM_MESSAGE_PRIORITY {
  */
 export class JoinChannelOptions {
   token?: string;
-  withMetadata?: boolean;
-  withPresence?: boolean;
-  withLock?: boolean;
+  withMetadata?: boolean = false;
+  withPresence?: boolean = true;
+  withLock?: boolean = false;
+  constructor(
+    props?: Partial<{
+      token?: string;
+      withMetadata?: boolean;
+      withPresence?: boolean;
+      withLock?: boolean;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
  * Join topic options.
  */
 export class JoinTopicOptions {
-  qos?: RTM_MESSAGE_QOS;
-  priority?: RTM_MESSAGE_PRIORITY;
+  qos?: RTM_MESSAGE_QOS = RTM_MESSAGE_QOS.RTM_MESSAGE_QOS_UNORDERED;
+  priority?: RTM_MESSAGE_PRIORITY =
+    RTM_MESSAGE_PRIORITY.RTM_MESSAGE_PRIORITY_NORMAL;
   meta?: string;
   syncWithMedia?: boolean;
+  constructor(
+    props?: Partial<{
+      qos?: RTM_MESSAGE_QOS;
+      priority?: RTM_MESSAGE_PRIORITY;
+      meta?: string;
+      syncWithMedia?: boolean;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
@@ -45,7 +66,15 @@ export class JoinTopicOptions {
  */
 export class TopicOptions {
   users?: string[];
-  userCount?: number;
+  userCount?: number = 0;
+  constructor(
+    props?: Partial<{
+      users?: string[];
+      userCount?: number;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**

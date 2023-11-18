@@ -1,6 +1,7 @@
 import {
   MessageEvent,
   PresenceEvent,
+  PublishOptions,
   RTM_CONNECTION_CHANGE_REASON,
   RTM_CONNECTION_STATE,
   RTM_ERROR_CODE,
@@ -90,9 +91,14 @@ export default function PublishMessage() {
    */
   const publish = useCallback(
     (msg: string, msgs: any) => {
-      let result = client.publish(cName, msg, msg.length, {
-        type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING,
-      });
+      let result = client.publish(
+        cName,
+        msg,
+        msg.length,
+        new PublishOptions({
+          type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING,
+        })
+      );
       if (result !== RTM_ERROR_CODE.RTM_ERROR_OK) {
         log.error('CHANNEL_INVALID_MESSAGE', result);
       } else {

@@ -1,5 +1,6 @@
 import {
   IStreamChannel,
+  JoinChannelOptions,
   RTM_CONNECTION_CHANGE_REASON,
   RTM_CONNECTION_STATE,
   RTM_ERROR_CODE,
@@ -92,11 +93,11 @@ export default function CreateStreamChannel() {
       log.error('please create streamChannel first');
       return;
     }
-    streamChannel.join({
-      token: Config.appId,
-      withMetadata: true,
-      withPresence: true,
-    });
+    streamChannel.join(
+      new JoinChannelOptions({
+        token: Config.appId,
+      })
+    );
   };
 
   /**

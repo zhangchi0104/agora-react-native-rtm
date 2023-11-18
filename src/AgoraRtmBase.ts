@@ -266,7 +266,16 @@ export enum RTM_PRESENCE_EVENT_TYPE {
 export class RtmLogConfig {
   filePath?: string;
   fileSizeInKB?: number;
-  level?: RTM_LOG_LEVEL;
+  level?: RTM_LOG_LEVEL = RTM_LOG_LEVEL.RTM_LOG_LEVEL_INFO;
+  constructor(
+    props?: Partial<{
+      filePath?: string;
+      fileSizeInKB?: number;
+      level?: RTM_LOG_LEVEL;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
@@ -274,7 +283,15 @@ export class RtmLogConfig {
  */
 export class UserList {
   users?: string[];
-  userCount?: number;
+  userCount?: number = 0;
+  constructor(
+    props?: Partial<{
+      users?: string[];
+      userCount?: number;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
@@ -283,6 +300,14 @@ export class UserList {
 export class PublisherInfo {
   publisherUserId?: string;
   publisherMeta?: string;
+  constructor(
+    props?: Partial<{
+      publisherUserId?: string;
+      publisherMeta?: string;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
@@ -291,7 +316,16 @@ export class PublisherInfo {
 export class TopicInfo {
   topic?: string;
   publishers?: PublisherInfo[];
-  publisherCount?: number;
+  publisherCount?: number = 0;
+  constructor(
+    props?: Partial<{
+      topic?: string;
+      publishers?: PublisherInfo[];
+      publisherCount?: number;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
@@ -300,6 +334,14 @@ export class TopicInfo {
 export class StateItem {
   key?: string;
   value?: string;
+  constructor(
+    props?: Partial<{
+      key?: string;
+      value?: string;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
@@ -308,7 +350,16 @@ export class StateItem {
 export class LockDetail {
   lockName?: string;
   owner?: string;
-  ttl?: number;
+  ttl?: number = 0;
+  constructor(
+    props?: Partial<{
+      lockName?: string;
+      owner?: string;
+      ttl?: number;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
@@ -317,17 +368,36 @@ export class LockDetail {
 export class UserState {
   userId?: string;
   states?: StateItem[];
-  statesCount?: number;
+  statesCount?: number = 0;
+  constructor(
+    props?: Partial<{
+      userId?: string;
+      states?: StateItem[];
+      statesCount?: number;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
  *  The subscribe option.
  */
 export class SubscribeOptions {
-  withMessage?: boolean;
-  withMetadata?: boolean;
-  withPresence?: boolean;
-  withLock?: boolean;
+  withMessage?: boolean = true;
+  withMetadata?: boolean = false;
+  withPresence?: boolean = true;
+  withLock?: boolean = false;
+  constructor(
+    props?: Partial<{
+      withMessage?: boolean;
+      withMetadata?: boolean;
+      withPresence?: boolean;
+      withLock?: boolean;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
@@ -336,51 +406,107 @@ export class SubscribeOptions {
 export class ChannelInfo {
   channelName?: string;
   channelType?: RTM_CHANNEL_TYPE;
+  constructor(
+    props?: Partial<{
+      channelName?: string;
+      channelType?: RTM_CHANNEL_TYPE;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
  *  The option to query user presence.
  */
 export class PresenceOptions {
-  includeUserId?: boolean;
-  includeState?: boolean;
+  includeUserId?: boolean = true;
+  includeState?: boolean = false;
   page?: string;
+  constructor(
+    props?: Partial<{
+      includeUserId?: boolean;
+      includeState?: boolean;
+      page?: string;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
  *  The option to query user presence.
  */
 export class GetOnlineUsersOptions {
-  includeUserId?: boolean;
-  includeState?: boolean;
+  includeUserId?: boolean = true;
+  includeState?: boolean = false;
   page?: string;
+  constructor(
+    props?: Partial<{
+      includeUserId?: boolean;
+      includeState?: boolean;
+      page?: string;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
  * @brief Publish message option
  */
 export class PublishOptions {
-  type?: RTM_MESSAGE_TYPE;
-  sendTs?: number;
+  type?: RTM_MESSAGE_TYPE = RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_BINARY;
+  sendTs?: number = 0;
   customType?: string;
+  constructor(
+    props?: Partial<{
+      type?: RTM_MESSAGE_TYPE;
+      sendTs?: number;
+      customType?: string;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
  * @brief Proxy configuration
  */
 export class RtmProxyConfig {
-  proxyType?: RTM_PROXY_TYPE;
+  proxyType?: RTM_PROXY_TYPE = RTM_PROXY_TYPE.RTM_PROXY_TYPE_NONE;
   server?: string;
-  port?: number;
+  port?: number = 0;
   account?: string;
   password?: string;
+  constructor(
+    props?: Partial<{
+      proxyType?: RTM_PROXY_TYPE;
+      server?: string;
+      port?: number;
+      account?: string;
+      password?: string;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 /**
  * @brief encryption configuration
  */
 export class RtmEncryptionConfig {
-  encryptionMode?: RTM_ENCRYPTION_MODE;
+  encryptionMode?: RTM_ENCRYPTION_MODE =
+    RTM_ENCRYPTION_MODE.RTM_ENCRYPTION_MODE_NONE;
   encryptionKey?: string;
   encryptionSalt?: number;
+  constructor(
+    props?: Partial<{
+      encryptionMode?: RTM_ENCRYPTION_MODE;
+      encryptionKey?: string;
+      encryptionSalt?: number;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }

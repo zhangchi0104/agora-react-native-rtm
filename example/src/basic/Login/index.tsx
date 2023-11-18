@@ -2,6 +2,7 @@ import {
   RTM_CONNECTION_CHANGE_REASON,
   RTM_CONNECTION_STATE,
   RTM_ERROR_CODE,
+  RtmConfig,
 } from 'agora-react-native-rtm';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -57,15 +58,17 @@ export default function Login() {
     if (!uid || uid.length === 0) {
       return;
     }
-    client.initialize({
-      userId: uid,
-      appId: Config.appId,
-      eventHandler: {
-        onLoginResult: () => {
-          console.log('onLoginResult');
+    client.initialize(
+      new RtmConfig({
+        userId: uid,
+        appId: Config.appId,
+        eventHandler: {
+          onLoginResult: () => {
+            console.log('onLoginResult');
+          },
         },
-      },
-    });
+      })
+    );
     return () => {
       setLoginSuccess(false);
       client.release();

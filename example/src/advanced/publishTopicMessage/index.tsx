@@ -1,7 +1,10 @@
 import {
   IStreamChannel,
+  JoinChannelOptions,
+  JoinTopicOptions,
   MessageEvent,
   PresenceEvent,
+  PublishOptions,
   RTM_CONNECTION_CHANGE_REASON,
   RTM_CONNECTION_STATE,
   RTM_ERROR_CODE,
@@ -10,6 +13,7 @@ import {
   RTM_MESSAGE_TYPE,
   StorageEvent,
   TopicEvent,
+  TopicOptions,
   UserList,
 } from 'agora-react-native-rtm';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -224,9 +228,7 @@ export default function PublishTopicMessage() {
         topicName,
         msg,
         msg.length,
-        {
-          type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING,
-        }
+        new PublishOptions({ type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING })
       );
       if (result !== RTM_ERROR_CODE.RTM_ERROR_OK) {
         log.error('CHANNEL_INVALID_MESSAGE', result);
@@ -288,11 +290,7 @@ export default function PublishTopicMessage() {
       log.error('please create streamChannel first');
       return;
     }
-    streamChannel.join({
-      token: Config.appId,
-      withMetadata: true,
-      withPresence: true,
-    });
+    streamChannel.join(new JoinChannelOptions({ token: Config.appId }));
   };
 
   /**
@@ -312,10 +310,7 @@ export default function PublishTopicMessage() {
       log.error('please create streamChannel first');
       return;
     }
-    streamChannel.joinTopic(topicName, {
-      qos: RTM_MESSAGE_QOS.RTM_MESSAGE_QOS_ORDERED,
-      priority: RTM_MESSAGE_PRIORITY.RTM_MESSAGE_PRIORITY_NORMAL,
-    });
+    streamChannel.joinTopic(topicName, new JoinTopicOptions());
   };
 
   /**

@@ -3,7 +3,6 @@ import * as path from 'path';
 import { CXXFile, CXXTYPE, CXXTerraNode } from '@agoraio-extensions/cxx-parser';
 import {
   ParseResult,
-  Parser,
   RenderResult,
   TerraContext,
 } from '@agoraio-extensions/terra-core';
@@ -13,6 +12,7 @@ import { renderWithConfiguration } from '@agoraio-extensions/terra_shared_config
 import {
   appendNumberToDuplicateMemberFunction,
   filterFile,
+  getDefaultValue,
   isMatch,
 } from './utils';
 
@@ -41,9 +41,11 @@ interface EnumMethodUserData {
   comment: string;
 }
 
-interface StructMethodUserData {
+interface StructMemberVariableUserData {
   hasComment: boolean;
   comment: string;
+  hasDefaultValue: boolean;
+  defaultValue: any;
 }
 
 export default function (
@@ -108,16 +110,18 @@ export default function (
       }
 
       if (node.__TYPE === CXXTYPE.Struct) {
-        // debugger;
-        node.asStruct().member_variables.map((method) => {
-          const clazzMethodUserData: ClazzMethodUserData = {
+        node.asStruct().member_variables.map((member_variable) => {
+          const structMemberVariableUserData: StructMemberVariableUserData = {
             hasComment: node.comment !== '',
             comment: node.comment
               .replace(/^\n/, '* ')
               .replace(/\n$/, '')
               .replace(/\n/g, '\n* '),
+            hasDefaultValue:
+              getDefaultValue(node.asStruct(), member_variable).length > 0,
+            defaultValue: getDefaultValue(node.asStruct(), member_variable),
           };
-          method.user_data = clazzMethodUserData;
+          member_variable.user_data = structMemberVariableUserData;
         });
       }
 

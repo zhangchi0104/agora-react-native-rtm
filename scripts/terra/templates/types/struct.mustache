@@ -6,6 +6,13 @@
 {{/user_data.hasComment}}
 export class {{name}} {
 {{#member_variables}}
+  {{name}}?: {{#type}}{{source}}{{/type}}{{{user_data.defaultValue}}};
+{{/member_variables}}
+  constructor(props?: Partial<{
+    {{#member_variables}}
   {{name}}?: {{#type}}{{source}}{{/type}};
 {{/member_variables}}
+  }>) {
+    Object.assign(this, props);
+  }
 }

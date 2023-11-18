@@ -1,12 +1,18 @@
-import path = require('path');
+import {
+  CXXFile,
+  MemberFunction,
+  MemberVariable,
+  Struct,
+} from '@agoraio-extensions/cxx-parser';
 
-import { CXXFile, MemberFunction } from '@agoraio-extensions/cxx-parser';
+const path = require('path');
 
-let regMap = {
+let regMap: any = {
   isCallback: '.*(Observer|Handler|Callback|Receiver|Sink).*',
 };
 
-import filterFileList = require('./config/filter_file_list.json');
+const filterFileList = require('./config/filter_file_list.json');
+const specialConstructList = require('./config/special_construct_list.json');
 
 export function filterFile(cxxfiles: CXXFile[]): CXXFile[] {
   return cxxfiles.filter((file) => {
@@ -28,7 +34,7 @@ export function isMatch(str: string, type: string): boolean {
 export function appendNumberToDuplicateMemberFunction(
   arr: MemberFunction[]
 ): MemberFunction[] {
-  const count = {};
+  const count: any = {};
   arr.forEach((item: MemberFunction) => {
     if (count[item.name] === undefined) {
       count[item.name] = 1;
@@ -41,4 +47,29 @@ export function appendNumberToDuplicateMemberFunction(
     }
   });
   return arr;
+}
+
+export function getDefaultValue(node: Struct, member_variable: MemberVariable) {
+  let default_value = '';
+  node.constructors.map((constructor) => {
+    constructor.initializerList.map((initializer) => {
+      if (initializer.name === member_variable.name) {
+        initializer.values.map((value, key) => {
+          //去掉特例
+          if (!specialConstructList.includes(value)) {
+            if (key === 0) {
+              default_value += `=${
+                member_variable.type.name.match(/boolean|number|string/g)
+                  ? ''
+                  : member_variable.type.name + '.'
+              }${value.replace(new RegExp('^(.*)::(.*)'), '$2')}`;
+            } else {
+              default_value += `||${value}`;
+            }
+          }
+        });
+      }
+    });
+  });
+  return default_value;
 }

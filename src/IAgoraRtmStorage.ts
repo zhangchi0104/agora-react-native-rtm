@@ -6,16 +6,35 @@ import { RTM_CHANNEL_TYPE } from './AgoraRtmBase';
  * Metadata options.
  */
 export class MetadataOptions {
-  recordTs?: boolean;
-  recordUserId?: boolean;
+  recordTs?: boolean = false;
+  recordUserId?: boolean = false;
+  constructor(
+    props?: Partial<{
+      recordTs?: boolean;
+      recordUserId?: boolean;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 export class MetadataItem {
   key?: string;
   value?: string;
   authorUserId?: string;
-  revision?: number;
-  updateTs?: number;
+  revision?: number = -1;
+  updateTs?: number = 0;
+  constructor(
+    props?: Partial<{
+      key?: string;
+      value?: string;
+      authorUserId?: string;
+      revision?: number;
+      updateTs?: number;
+    }>
+  ) {
+    Object.assign(this, props);
+  }
 }
 
 export abstract class IMetadata {
