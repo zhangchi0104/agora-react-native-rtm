@@ -5,6 +5,8 @@ import {
 } from 'agora-react-native-rtm';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { KeyboardAvoidingView, Platform } from 'react-native';
+
 import {
   AgoraButton,
   AgoraStyle,
@@ -101,25 +103,30 @@ export default function Login() {
   }, [client, uid, onLoginResult, onConnectionStateChanged]);
 
   return (
-    <AgoraView style={AgoraStyle.fullWidth}>
-      {loginSuccess ? (
-        <AgoraText>{`current login userId:\n${uid}`}</AgoraText>
-      ) : (
-        <AgoraTextInput
-          onChangeText={(text) => {
-            setUid(text);
+    <KeyboardAvoidingView
+      style={AgoraStyle.fullSize}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <AgoraView style={AgoraStyle.fullWidth}>
+        {loginSuccess ? (
+          <AgoraText>{`current login userId:\n${uid}`}</AgoraText>
+        ) : (
+          <AgoraTextInput
+            onChangeText={(text) => {
+              setUid(text);
+            }}
+            placeholder="please input userId"
+            label="userId"
+            value={uid}
+          />
+        )}
+        <AgoraButton
+          title={`${loginSuccess ? 'logout' : 'login'}`}
+          onPress={() => {
+            loginSuccess ? logout() : login();
           }}
-          placeholder="please input userId"
-          label="userId"
-          value={uid}
         />
-      )}
-      <AgoraButton
-        title={`${loginSuccess ? 'logout' : 'login'}`}
-        onPress={() => {
-          loginSuccess ? logout() : login();
-        }}
-      />
-    </AgoraView>
+      </AgoraView>
+    </KeyboardAvoidingView>
   );
 }

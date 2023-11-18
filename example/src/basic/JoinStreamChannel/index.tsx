@@ -6,6 +6,8 @@ import {
 } from 'agora-react-native-rtm';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { KeyboardAvoidingView, Platform } from 'react-native';
+
 import BaseComponent from '../../components/BaseComponent';
 import { AgoraButton, AgoraStyle, AgoraView } from '../../components/ui';
 import Config from '../../config/agora.config';
@@ -175,41 +177,46 @@ export default function JoinStreamChannel() {
   }, [client, uid, onConnectionStateChanged]);
 
   return (
-    <AgoraView style={AgoraStyle.fullWidth}>
-      <BaseComponent
-        onChannelNameChanged={(v) => setCName(v)}
-        onUidChanged={(v) => setUid(v)}
-      />
-      <AgoraButton
-        disabled={!loginSuccess}
-        title={`createStreamChannel`}
-        onPress={() => {
-          createStreamChannel();
-        }}
-      />
-      <AgoraButton
-        disabled={!loginSuccess}
-        title={`${joinSuccess ? 'leave' : 'join'}`}
-        onPress={() => {
-          joinSuccess ? leave() : join();
-        }}
-      />
-      <AgoraButton
-        disabled={!loginSuccess}
-        title={`destroyStreamChannel`}
-        onPress={() => {
-          destroyStreamChannel();
-        }}
-      />
-      <AgoraButton
-        disabled={!streamChannel}
-        title={`getChannelName`}
-        onPress={() => {
-          if (streamChannel) {
-            log.alert(streamChannel.getChannelName());
-          }
-        }}
-      />
-    </AgoraView>
+    <KeyboardAvoidingView
+      style={AgoraStyle.fullSize}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <AgoraView style={AgoraStyle.fullWidth}>
+        <BaseComponent
+          onChannelNameChanged={(v) => setCName(v)}
+          onUidChanged={(v) => setUid(v)}
+        />
+        <AgoraButton
+          disabled={!loginSuccess}
+          title={`createStreamChannel`}
+          onPress={() => {
+            createStreamChannel();
+          }}
+        />
+        <AgoraButton
+          disabled={!loginSuccess}
+          title={`${joinSuccess ? 'leave' : 'join'}`}
+          onPress={() => {
+            joinSuccess ? leave() : join();
+          }}
+        />
+        <AgoraButton
+          disabled={!loginSuccess}
+          title={`destroyStreamChannel`}
+          onPress={() => {
+            destroyStreamChannel();
+          }}
+        />
+        <AgoraButton
+          disabled={!streamChannel}
+          title={`getChannelName`}
+          onPress={() => {
+            if (streamChannel) {
+              log.alert(streamChannel.getChannelName());
+            }
+          }}
+        />
+      </AgoraView>
+    </KeyboardAvoidingView>
   );
 }

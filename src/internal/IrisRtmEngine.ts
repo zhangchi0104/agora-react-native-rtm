@@ -151,19 +151,21 @@ export function callIrisApi(this: any, funcName: string, params: any): any {
     }
     if (funcName === 'RtmClient_publish') {
       if (typeof params.message === 'string') {
-        buffers.push(
-          base64.fromByteArray(
-            Buffer.from(params.message ?? '') ?? Buffer.from('')
-          )
+        let buffer = base64.fromByteArray(
+          Buffer.from(params.message ?? '') ?? Buffer.from('')
         );
+        buffers.push(buffer);
+        params.length = base64.byteLength(buffer);
       } else {
-        buffers.push(base64.fromByteArray(params.message ?? Buffer.from('')));
+        let buffer = base64.fromByteArray(params.message ?? Buffer.from(''));
+        buffers.push(buffer);
+        params.length = base64.byteLength(buffer);
       }
-      // delete params.message;
+      delete params.message;
       const json = params.toJSON?.call();
       delete json.message;
       params.toJSON = function () {
-        return { ...json };
+        return { ...json, length: params.length };
       };
     }
 

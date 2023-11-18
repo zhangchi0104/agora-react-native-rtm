@@ -8,14 +8,10 @@ import {
   StorageEvent,
 } from 'agora-react-native-rtm';
 import React, { useCallback, useEffect, useState } from 'react';
+import { GiftedChat } from 'react-native-gifted-chat';
 
 import BaseComponent from '../../components/BaseComponent';
-import {
-  AgoraButton,
-  AgoraStyle,
-  AgoraTextInput,
-  AgoraView,
-} from '../../components/ui';
+import { AgoraButton, AgoraStyle, AgoraView } from '../../components/ui';
 import Config from '../../config/agora.config';
 import { useRtmClient } from '../../hooks/useRtmClient';
 import * as log from '../../utils/log';
@@ -25,9 +21,9 @@ export default function PublishMessage() {
   const [subscribeSuccess, setSubscribeSuccess] = useState(false);
   const [cName, setCName] = useState<string>(Config.channelName);
   const [uid, setUid] = useState<string>(Config.uid);
-  const [message, setMessage] = useState<string>('');
   const [publishRequestId, setPublishRequestId] = useState<number>(1);
   const [subscribeRequestId, setSubscribeRequestId] = useState<number>(2);
+  const [messages, setMessages] = useState<any[]>([]);
 
   const onStorageEvent = useCallback((event: StorageEvent) => {
     log.log('onStorageEvent', 'event', event);
@@ -53,9 +49,25 @@ export default function PublishMessage() {
     log.log('onStoragonPresenceEventeEvent', 'event', event);
   }, []);
 
-  const onMessageEvent = useCallback((event: MessageEvent) => {
-    log.log('onMessageEvent', 'event', event);
-  }, []);
+  const onMessageEvent = useCallback(
+    (event: MessageEvent) => {
+      log.log('onMessageEvent', 'event', event);
+      setMessages((prevState) =>
+        GiftedChat.append(prevState, [
+          {
+            _id: +new Date(),
+            text: event.message,
+            user: {
+              _id: +new Date(),
+              name: event.publisher || uid.slice(-1),
+            },
+            createdAt: new Date(),
+          },
+        ])
+      );
+    },
+    [uid]
+  );
 
   /**
    * Step 1: getRtmClient
@@ -63,25 +75,46 @@ export default function PublishMessage() {
   const client = useRtmClient();
 
   /**
-   * Step 3 : publish message to message channel
+   * Step 2 : publish message to message channel
    */
-  const publish = () => {
-    let result = client.publish(
-      cName,
-      message,
-      message.length,
-      {
-        type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING,
-      },
-      publishRequestId
-    );
-    if (result !== RTM_ERROR_CODE.RTM_ERROR_OK) {
-      log.error('CHANNEL_INVALID_MESSAGE', result);
-    }
-  };
+  const publish = useCallback(
+    (msg: string) => {
+      let result = client.publish(
+        cName,
+        msg,
+        msg.length,
+        {
+          type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING,
+        },
+        publishRequestId
+      );
+      if (result !== RTM_ERROR_CODE.RTM_ERROR_OK) {
+        log.error('CHANNEL_INVALID_MESSAGE', result);
+      }
+    },
+    [cName, client, publishRequestId]
+  );
+
+  const onSend = useCallback(
+    (msgs = []) => {
+      if (!loginSuccess) {
+        log.error('please login first');
+        return;
+      }
+
+      msgs.forEach((message: any) => {
+        publish(message.text);
+      });
+
+      setMessages((previousMessages) =>
+        GiftedChat.append(previousMessages, msgs)
+      );
+    },
+    [loginSuccess, publish]
+  );
 
   /**
-   * Step 4 : subscribe message channel
+   * Step 3(optional) : subscribe message channel
    */
   const subscribe = () => {
     client.subscribe(
@@ -96,7 +129,7 @@ export default function PublishMessage() {
   };
 
   /**
-   * Step 5 : unsubscribe message channel
+   * Step 4 : unsubscribe message channel
    */
   const unsubscribe = () => {
     client.unsubscribe(Config.channelName);
@@ -170,33 +203,28 @@ export default function PublishMessage() {
   }, [client, uid, onConnectionStateChanged]);
 
   return (
-    <AgoraView style={AgoraStyle.fullWidth}>
-      <BaseComponent
-        onChannelNameChanged={(v) => setCName(v)}
-        onUidChanged={(v) => setUid(v)}
-      />
-      <AgoraButton
-        disabled={!loginSuccess}
-        title={`${subscribeSuccess ? 'unsubscribe' : 'subscribe'}`}
-        onPress={() => {
-          subscribeSuccess ? unsubscribe() : subscribe();
+    <>
+      <AgoraView style={AgoraStyle.fullWidth}>
+        <BaseComponent
+          onChannelNameChanged={(v) => setCName(v)}
+          onUidChanged={(v) => setUid(v)}
+        />
+        <AgoraButton
+          disabled={!loginSuccess}
+          title={`${subscribeSuccess ? 'unsubscribe' : 'subscribe'}`}
+          onPress={() => {
+            subscribeSuccess ? unsubscribe() : subscribe();
+          }}
+        />
+      </AgoraView>
+      <GiftedChat
+        wrapInSafeArea={false}
+        messages={messages}
+        onSend={(v) => onSend(v)}
+        user={{
+          _id: uid,
         }}
       />
-      <AgoraTextInput
-        onChangeText={(text) => {
-          setMessage(text);
-        }}
-        label="message"
-        placeholder="please input message"
-        value={message}
-      />
-      <AgoraButton
-        disabled={!loginSuccess}
-        title={`publish message`}
-        onPress={() => {
-          publish();
-        }}
-      />
-    </AgoraView>
+    </>
   );
 }

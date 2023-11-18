@@ -11,7 +11,6 @@ import React, { useEffect } from 'react';
 import {
   AppState,
   Keyboard,
-  KeyboardAvoidingView,
   Platform,
   SafeAreaView,
   SectionList,
@@ -24,7 +23,6 @@ import {
 import Advanced from './advanced';
 import Basic from './basic';
 import Client from './components/Client';
-import { AgoraStyle } from './components/ui';
 const RootStack = createStackNavigator<any>();
 setDebuggable(!isDebuggable());
 const DATA = [Basic, Advanced];
@@ -32,8 +30,8 @@ const DATA = [Basic, Advanced];
 export default function App() {
   useEffect(() => {
     let subscription = AppState.addEventListener('change', (state) => {
-      //just for live reload mode To reset the rtm client
-      if (state === 'background') {
+      //just for live reload mode To reset the rtm client in Android
+      if (state === 'background' && Platform.OS === 'android') {
         createAgoraRtmClient().release();
       }
     });
@@ -59,14 +57,9 @@ export default function App() {
                 <RootStack.Screen
                   name={name}
                   children={() => (
-                    <KeyboardAvoidingView
-                      style={AgoraStyle.fullSize}
-                      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    >
-                      <Client>
-                        <RouteComponent />
-                      </Client>
-                    </KeyboardAvoidingView>
+                    <Client>
+                      <RouteComponent />
+                    </Client>
                   )}
                 />
               ) : undefined;
