@@ -5,17 +5,12 @@ import {
   JoinChannelOptions,
   JoinTopicOptions,
   MessageEvent,
-  PresenceEvent,
   PublishOptions,
   RTM_CONNECTION_CHANGE_REASON,
   RTM_CONNECTION_STATE,
   RTM_ERROR_CODE,
-  RTM_MESSAGE_PRIORITY,
-  RTM_MESSAGE_QOS,
   RTM_MESSAGE_TYPE,
-  StorageEvent,
   TopicEvent,
-  TopicOptions,
   UserList,
 } from 'agora-react-native-rtm';
 import React, { useCallback, useEffect, useState } from 'react';

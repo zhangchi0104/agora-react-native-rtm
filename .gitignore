@@ -81,7 +81,7 @@ lib/
 *.xcframework
 ios/AgoraRtmWrapper.podspec
 env_local.*
-
+docs/
 
 
 .terra

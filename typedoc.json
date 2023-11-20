@@ -1,0 +1,8 @@
+{
+  "out": "./docs",
+  "name": "agora-react-native-rtm",
+  "includeVersion": true,
+  "hideGenerator": true,
+  "includes": "./src",
+  "exclude": ["**/scripts/terra/**/*"]
+}
