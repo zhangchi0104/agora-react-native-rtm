@@ -437,6 +437,6 @@ export abstract class IRtmClient {
     message: Uint8Array,
     length: number,
     option: PublishOptions,
-    requestId: number
+    requestId?: number
   ): number;
 }

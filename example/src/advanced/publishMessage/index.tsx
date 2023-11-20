@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import {
   MessageEvent,
   PresenceEvent,
@@ -20,6 +22,7 @@ import * as log from '../../utils/log';
 export default function PublishMessage() {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [subscribeSuccess, setSubscribeSuccess] = useState(false);
+  const [publishMessageByBuffer, setPublishMessageByBuffer] = useState(false);
   const [cName, setCName] = useState<string>(Config.channelName);
   const [uid, setUid] = useState<string>(Config.uid);
   const [messages, setMessages] = useState<any[]>([]);
@@ -82,7 +85,7 @@ export default function PublishMessage() {
   );
 
   /**
-   * Step 1: getRtmClient
+   * Step 1: getRtmClient and initialize rtm client from BaseComponent
    */
   const client = useRtmClient();
 
@@ -91,14 +94,27 @@ export default function PublishMessage() {
    */
   const publish = useCallback(
     (msg: string, msgs: any) => {
-      let result = client.publish(
-        cName,
-        msg,
-        msg.length,
-        new PublishOptions({
-          type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING,
-        })
-      );
+      let result: number | undefined;
+      if (publishMessageByBuffer) {
+        result = client.publishWithBuffer(
+          cName,
+          Buffer.from(msg),
+          msg.length,
+          new PublishOptions({
+            type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_BINARY,
+          })
+        );
+      } else {
+        result = client.publish(
+          cName,
+          msg,
+          msg.length,
+          new PublishOptions({
+            type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING,
+          })
+        );
+      }
+
       if (result !== RTM_ERROR_CODE.RTM_ERROR_OK) {
         log.error('CHANNEL_INVALID_MESSAGE', result);
       } else {
@@ -107,7 +123,7 @@ export default function PublishMessage() {
         );
       }
     },
-    [cName, client]
+    [cName, client, publishMessageByBuffer]
   );
 
   const onSend = useCallback(
@@ -227,6 +243,14 @@ export default function PublishMessage() {
           }}
         />
       </AgoraView>
+      <AgoraButton
+        title={`current: publish${
+          publishMessageByBuffer ? 'ByBuffer' : 'ByString'
+        }`}
+        onPress={() => {
+          setPublishMessageByBuffer((v) => !v);
+        }}
+      />
       <GiftedChat
         wrapInSafeArea={false}
         messages={messages}

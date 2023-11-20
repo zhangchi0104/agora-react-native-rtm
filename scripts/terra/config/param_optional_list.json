@@ -1,7 +1,7 @@
 [
   "agora::rtm::IRtmClient.publish.requestId",
   "agora::rtm::IRtmClient.subscribe.requestId",
-  "agora::rtm::IRtmClient.publishWithBuffer.requestId",
+  "agora::rtm::ext::IRtmClient.publishWithBuffer.requestId",
   "agora::rtm::IRtmLock.setLock.requestId",
   "agora::rtm::IRtmLock.getLocks.requestId",
   "agora::rtm::IRtmLock.removeLock.requestId",

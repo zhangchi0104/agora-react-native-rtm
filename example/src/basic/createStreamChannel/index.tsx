@@ -69,7 +69,7 @@ export default function CreateStreamChannel() {
   );
 
   /**
-   * Step 1: getRtmClient
+   * Step 1: getRtmClient and initialize rtm client from BaseComponent
    */
   const client = useRtmClient();
 

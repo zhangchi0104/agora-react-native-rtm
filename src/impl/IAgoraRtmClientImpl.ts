@@ -582,7 +582,7 @@ export class IRtmClientImpl implements IRtmClient {
     message: Uint8Array,
     length: number,
     option: PublishOptions,
-    requestId: number
+    requestId?: number
   ): number {
     const apiType = this.getApiTypeFromPublishWithBuffer();
     const jsonParams = {

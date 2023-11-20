@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import {
   IStreamChannel,
   JoinChannelOptions,
@@ -17,6 +19,7 @@ import {
   UserList,
 } from 'agora-react-native-rtm';
 import React, { useCallback, useEffect, useState } from 'react';
+import { ScrollView } from 'react-native-gesture-handler';
 import { GiftedChat } from 'react-native-gifted-chat';
 
 import BaseComponent from '../../components/BaseComponent';
@@ -34,6 +37,7 @@ export default function PublishTopicMessage() {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [joinSuccess, setJoinSuccess] = useState(false);
   const [joinTopicSuccess, setJoinTopicSuccess] = useState(false);
+  const [publishMessageByBuffer, setPublishMessageByBuffer] = useState(false);
   const [streamChannel, setStreamChannel] = useState<IStreamChannel>();
   const [subscribeSuccess, setSubscribeSuccess] = useState(false);
   const [cName, setCName] = useState<string>(Config.channelName);
@@ -215,21 +219,32 @@ export default function PublishTopicMessage() {
   }, []);
 
   /**
-   * Step 1: getRtmClient
+   * Step 1: getRtmClient and initialize rtm client from BaseComponent
    */
   const client = useRtmClient();
 
   /**
-   * Step 2 : publish message to message channel
+   * Step 2 : publish message to topic by publishTopicMessage
    */
   const publish = useCallback(
-    (msg: any, msgs: any[]) => {
-      let result = streamChannel?.publishTopicMessage(
-        topicName,
-        msg,
-        msg.length,
-        new PublishOptions({ type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING })
-      );
+    (msg: string, msgs: any[]) => {
+      let result: number | undefined;
+      if (publishMessageByBuffer) {
+        result = streamChannel?.publishTopicMessageWithBuffer(
+          topicName,
+          Buffer.from(msg),
+          msg.length,
+          new PublishOptions({ type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_BINARY })
+        );
+      } else {
+        result = streamChannel?.publishTopicMessage(
+          topicName,
+          msg,
+          msg.length,
+          new PublishOptions({ type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING })
+        );
+      }
+
       if (result !== RTM_ERROR_CODE.RTM_ERROR_OK) {
         log.error('CHANNEL_INVALID_MESSAGE', result);
       } else {
@@ -238,7 +253,7 @@ export default function PublishTopicMessage() {
         );
       }
     },
-    [streamChannel, topicName]
+    [publishMessageByBuffer, streamChannel, topicName]
   );
 
   const onSend = useCallback(
@@ -256,14 +271,14 @@ export default function PublishTopicMessage() {
   );
 
   /**
-   * Step 3(optional) : subscribe message channel
+   * Step 3(optional) : subscribe topic
    */
   const subscribe = () => {
     streamChannel?.subscribeTopic(topicName);
   };
 
   /**
-   * Step 4 : unsubscribe message channel
+   * Step 4 : unsubscribe topic
    */
   const unsubscribe = () => {
     streamChannel?.unsubscribeTopic(topicName);
@@ -283,7 +298,7 @@ export default function PublishTopicMessage() {
   };
 
   /**
-   * Step 3 : join
+   * Step 3 : join message channel
    */
   const join = () => {
     if (!streamChannel) {
@@ -294,7 +309,7 @@ export default function PublishTopicMessage() {
   };
 
   /**
-   * Step 4 : leave
+   * Step 4 : leave message channel
    */
   const leave = () => {
     if (streamChannel) {
@@ -416,59 +431,69 @@ export default function PublishTopicMessage() {
 
   return (
     <>
-      <AgoraView style={AgoraStyle.fullWidth}>
-        <BaseComponent
-          onChannelNameChanged={(v) => setCName(v)}
-          onUidChanged={(v) => setUid(v)}
-        />
-        <AgoraButton
-          disabled={!loginSuccess}
-          title={`${
-            streamChannel ? 'destroyStreamChannel' : 'createStreamChannel'
-          }`}
-          onPress={() => {
-            streamChannel ? destroyStreamChannel() : createStreamChannel();
-          }}
-        />
-        <AgoraButton
-          disabled={!loginSuccess || !streamChannel}
-          title={`${joinSuccess ? 'leaveChannel' : 'joinChannel'}`}
-          onPress={() => {
-            joinSuccess ? leave() : join();
-          }}
-        />
-        <AgoraTextInput
-          onChangeText={(text) => {
-            setTopicName(text);
-          }}
-          placeholder="please input topic"
-          label="topicName"
-          value={topicName}
-          disabled={joinTopicSuccess}
-        />
-        <AgoraButton
-          disabled={!joinSuccess || !loginSuccess}
-          title={`${joinTopicSuccess ? 'leave' : 'join'} topic`}
-          onPress={() => {
-            joinTopicSuccess ? leaveTopic() : joinTopic();
-          }}
-        />
-        <AgoraButton
-          disabled={!loginSuccess || !joinSuccess}
-          title={`${subscribeSuccess ? 'unsubscribe' : 'subscribe'} topic`}
-          onPress={() => {
-            subscribeSuccess ? unsubscribe() : subscribe();
+      <AgoraView style={[AgoraStyle.fullSize]}>
+        <ScrollView style={[{ maxHeight: '70%' }]}>
+          <BaseComponent
+            onChannelNameChanged={(v) => setCName(v)}
+            onUidChanged={(v) => setUid(v)}
+          />
+          <AgoraButton
+            disabled={!loginSuccess}
+            title={`${
+              streamChannel ? 'destroyStreamChannel' : 'createStreamChannel'
+            }`}
+            onPress={() => {
+              streamChannel ? destroyStreamChannel() : createStreamChannel();
+            }}
+          />
+          <AgoraButton
+            disabled={!loginSuccess || !streamChannel}
+            title={`${joinSuccess ? 'leaveChannel' : 'joinChannel'}`}
+            onPress={() => {
+              joinSuccess ? leave() : join();
+            }}
+          />
+          <AgoraTextInput
+            onChangeText={(text) => {
+              setTopicName(text);
+            }}
+            placeholder="please input topic"
+            label="topicName"
+            value={topicName}
+            disabled={joinTopicSuccess}
+          />
+          <AgoraButton
+            disabled={!joinSuccess || !loginSuccess}
+            title={`${joinTopicSuccess ? 'leave' : 'join'} topic`}
+            onPress={() => {
+              joinTopicSuccess ? leaveTopic() : joinTopic();
+            }}
+          />
+          <AgoraButton
+            disabled={!loginSuccess || !joinSuccess}
+            title={`${subscribeSuccess ? 'unsubscribe' : 'subscribe'} topic`}
+            onPress={() => {
+              subscribeSuccess ? unsubscribe() : subscribe();
+            }}
+          />
+          <AgoraButton
+            title={`current: publish${
+              publishMessageByBuffer ? 'ByBuffer' : 'ByString'
+            }`}
+            onPress={() => {
+              setPublishMessageByBuffer((v) => !v);
+            }}
+          />
+        </ScrollView>
+        <GiftedChat
+          wrapInSafeArea={false}
+          messages={messages}
+          onSend={(v) => onSend(v)}
+          user={{
+            _id: uid,
           }}
         />
       </AgoraView>
-      <GiftedChat
-        wrapInSafeArea={false}
-        messages={messages}
-        onSend={(v) => onSend(v)}
-        user={{
-          _id: uid,
-        }}
-      />
     </>
   );
 }
