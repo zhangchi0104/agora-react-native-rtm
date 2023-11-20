@@ -90,7 +90,6 @@
     "react-native": "*"
   },
   "workspaces": [
-    "scripts/terra",
     "example"
   ],
   "packageManager": "yarn@4.0.1",
