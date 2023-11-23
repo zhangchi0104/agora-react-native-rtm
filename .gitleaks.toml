@@ -2,7 +2,7 @@
 description = "gh pages build file allow lists"
 paths = [
     '''gitleaks.toml''',
-    '''.yarn/releases/*.cjs''',
+    '''yarn-(.*?)(.cjs)''',
 ]
 
 # ----- BEGIN Agora AppId -----
