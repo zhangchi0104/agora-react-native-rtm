@@ -1,5 +1,4 @@
 {
-  "agora::rtm::IMetadata.getMetadataItems@return_type": "MetadataItem*",
   "agora::rtm::IChannelMember\\*": "IChannelMember",
   "^Optional<(.*)>": "$1",
   "^util::(.*)": "$1",

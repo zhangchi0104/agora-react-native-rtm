@@ -17,6 +17,7 @@ export default function BaseComponent({
   onChannelNameChanged,
 }: Props) {
   const [loginSuccess, setLoginSuccess] = useState(false);
+  const [initResult, setInitResult] = useState<number>(0);
   const [cName, setCName] = useState<string>(Config.channelName);
   const [uid, setUid] = useState<string>(Config.uid);
 
@@ -37,13 +38,13 @@ export default function BaseComponent({
     if (!uid || uid.length === 0) {
       return;
     }
-    client.initialize(
+    let result = client.initialize(
       new RtmConfig({
         userId: uid,
         appId: Config.appId,
       })
     );
-
+    setInitResult(result);
     return () => {
       setLoginSuccess(false);
       client.release();
@@ -86,6 +87,7 @@ export default function BaseComponent({
         disabled={loginSuccess}
       />
       <AgoraButton
+        disabled={!uid || initResult !== 0}
         title={`${loginSuccess ? 'logout' : 'login'}`}
         onPress={() => {
           loginSuccess ? logout() : login();

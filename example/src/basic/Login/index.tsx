@@ -21,6 +21,7 @@ import * as log from '../../utils/log';
 export default function Login() {
   const [uid, setUid] = useState(Config.uid);
   const [loginSuccess, setLoginSuccess] = useState(false);
+  const [initResult, setInitResult] = useState<number>(0);
   const onLoginResult = useCallback((errorCode: RTM_ERROR_CODE) => {
     log.log('onLoginResult', 'errorCode', errorCode);
     setLoginSuccess(errorCode === RTM_ERROR_CODE.RTM_ERROR_OK);
@@ -57,7 +58,7 @@ export default function Login() {
     if (!uid || uid.length === 0) {
       return;
     }
-    client.initialize(
+    let result = client.initialize(
       new RtmConfig({
         userId: uid,
         appId: Config.appId,
@@ -68,6 +69,7 @@ export default function Login() {
         },
       })
     );
+    setInitResult(result);
     return () => {
       setLoginSuccess(false);
       client.release();
@@ -123,6 +125,7 @@ export default function Login() {
           />
         )}
         <AgoraButton
+          disabled={!uid || initResult !== 0}
           title={`${loginSuccess ? 'logout' : 'login'}`}
           onPress={() => {
             loginSuccess ? logout() : login();

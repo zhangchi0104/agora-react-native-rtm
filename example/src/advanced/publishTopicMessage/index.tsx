@@ -15,7 +15,7 @@ import {
 } from 'agora-react-native-rtm';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
-import { GiftedChat } from 'react-native-gifted-chat';
+import { GiftedChat, IMessage } from 'react-native-gifted-chat';
 
 import BaseComponent from '../../components/BaseComponent';
 import {
@@ -38,7 +38,7 @@ export default function PublishTopicMessage() {
   const [cName, setCName] = useState<string>(Config.channelName);
   const [topicName, setTopicName] = useState<string>('topicRTMTest');
   const [uid, setUid] = useState<string>(Config.uid);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<IMessage[]>([]);
 
   const onSubscribeTopicResult = useCallback(
     (
@@ -176,19 +176,6 @@ export default function PublishTopicMessage() {
     []
   );
 
-  const onPublishResult = useCallback(
-    (requestId: number, errorCode: RTM_ERROR_CODE) => {
-      log.log(
-        'onPublishResult',
-        'requestId',
-        requestId,
-        'errorCode',
-        errorCode
-      );
-    },
-    []
-  );
-
   const onMessageEvent = useCallback(
     (event: MessageEvent) => {
       log.log('onMessageEvent', 'event', event);
@@ -196,7 +183,7 @@ export default function PublishTopicMessage() {
         GiftedChat.append(prevState, [
           {
             _id: +new Date(),
-            text: event.message,
+            text: event.message || '',
             user: {
               _id: +new Date(),
               name: event.publisher || uid.slice(-1),
@@ -222,27 +209,33 @@ export default function PublishTopicMessage() {
    * Step 2 : publish message to topic by publishTopicMessage
    */
   const publish = useCallback(
-    (msg: string, msgs: any[]) => {
+    (msg: IMessage, msgs: any[]) => {
       let result: number | undefined;
+      msg.sent = false;
       if (publishMessageByBuffer) {
         result = streamChannel?.publishTopicMessageWithBuffer(
           topicName,
-          Buffer.from(msg),
-          msg.length,
-          new PublishOptions({ type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_BINARY })
+          Buffer.from(msg.text),
+          msg.text?.length,
+          new PublishOptions({
+            type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_BINARY,
+          })
         );
       } else {
         result = streamChannel?.publishTopicMessage(
           topicName,
-          msg,
-          msg.length,
-          new PublishOptions({ type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING })
+          msg.text,
+          msg.text?.length,
+          new PublishOptions({
+            type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING,
+          })
         );
       }
 
       if (result !== RTM_ERROR_CODE.RTM_ERROR_OK) {
-        log.error('CHANNEL_INVALID_MESSAGE', result);
+        log.error('publish topic message failed:', result);
       } else {
+        msg.sent = true;
         setMessages((previousMessages) =>
           GiftedChat.append(previousMessages, msgs)
         );
@@ -258,8 +251,8 @@ export default function PublishTopicMessage() {
         return;
       }
 
-      msgs.forEach((message: any) => {
-        publish(message.text, msgs);
+      msgs.forEach((message: IMessage) => {
+        publish(message, msgs);
       });
     },
     [loginSuccess, publish]
@@ -345,7 +338,6 @@ export default function PublishTopicMessage() {
     client.addEventListener('onLeaveResult', onLeaveResult);
     client.addEventListener('onSubscribeTopicResult', onSubscribeTopicResult);
     client.addEventListener('onMessageEvent', onMessageEvent);
-    client.addEventListener('onPublishResult', onPublishResult);
     client.addEventListener('onTopicEvent', onTopicEvent);
     client.addEventListener('onJoinTopicResult', onJoinTopicResult);
     client.addEventListener('onLeaveTopicResult', onLeaveTopicResult);
@@ -358,7 +350,6 @@ export default function PublishTopicMessage() {
         onSubscribeTopicResult
       );
       client.removeEventListener('onMessageEvent', onMessageEvent);
-      client.removeEventListener('onPublishResult', onPublishResult);
       client.removeEventListener('onTopicEvent', onTopicEvent);
       client.removeEventListener('onJoinTopicResult', onJoinTopicResult);
       client.removeEventListener('onLeaveTopicResult', onLeaveTopicResult);
@@ -368,7 +359,6 @@ export default function PublishTopicMessage() {
     uid,
     onSubscribeTopicResult,
     onMessageEvent,
-    onPublishResult,
     onJoinResult,
     onLeaveResult,
     onTopicEvent,

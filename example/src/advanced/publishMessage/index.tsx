@@ -17,6 +17,7 @@ import BaseComponent from '../../components/BaseComponent';
 import { AgoraButton, AgoraStyle, AgoraView } from '../../components/ui';
 import Config from '../../config/agora.config';
 import { useRtmClient } from '../../hooks/useRtmClient';
+import { AgoraMessage } from '../../types';
 import * as log from '../../utils/log';
 
 export default function PublishMessage() {
@@ -25,7 +26,7 @@ export default function PublishMessage() {
   const [publishMessageByBuffer, setPublishMessageByBuffer] = useState(false);
   const [cName, setCName] = useState<string>(Config.channelName);
   const [uid, setUid] = useState<string>(Config.uid);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<AgoraMessage[]>([]);
 
   const onStorageEvent = useCallback((event: StorageEvent) => {
     log.log('onStorageEvent', 'event', event);
@@ -60,8 +61,17 @@ export default function PublishMessage() {
         'errorCode',
         errorCode
       );
+      if (errorCode !== RTM_ERROR_CODE.RTM_ERROR_OK) {
+        log.error('CHANNEL_INVALID_MESSAGE', errorCode);
+      } else {
+        messages.map((message) => {
+          if (message.requestId === requestId) {
+            message.sent = true;
+          }
+        });
+      }
     },
-    []
+    [messages]
   );
 
   const onMessageEvent = useCallback(
@@ -71,7 +81,7 @@ export default function PublishMessage() {
         GiftedChat.append(prevState, [
           {
             _id: +new Date(),
-            text: event.message,
+            text: event.message!,
             user: {
               _id: +new Date(),
               name: event.publisher || uid.slice(-1),
@@ -93,34 +103,34 @@ export default function PublishMessage() {
    * Step 2 : publish message to message channel
    */
   const publish = useCallback(
-    (msg: string, msgs: any) => {
-      let result: number | undefined;
-      if (publishMessageByBuffer) {
-        result = client.publishWithBuffer(
-          cName,
-          Buffer.from(msg),
-          msg.length,
-          new PublishOptions({
-            type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_BINARY,
-          })
-        );
-      } else {
-        result = client.publish(
-          cName,
-          msg,
-          msg.length,
-          new PublishOptions({
-            type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING,
-          })
-        );
-      }
-
-      if (result !== RTM_ERROR_CODE.RTM_ERROR_OK) {
-        log.error('CHANNEL_INVALID_MESSAGE', result);
-      } else {
+    (msg: AgoraMessage, msgs: AgoraMessage[]) => {
+      try {
+        if (publishMessageByBuffer) {
+          msg.requestId = client.publishWithBuffer(
+            cName,
+            Buffer.from(msg.text),
+            msg.text?.length,
+            new PublishOptions({
+              type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_BINARY,
+            })
+          );
+        } else {
+          msg.requestId = client.publish(
+            cName,
+            msg.text,
+            msg.text?.length,
+            new PublishOptions({
+              type: RTM_MESSAGE_TYPE.RTM_MESSAGE_TYPE_STRING,
+            })
+          );
+        }
+        msg.sent = false;
         setMessages((previousMessages) =>
           GiftedChat.append(previousMessages, msgs)
         );
+      } catch (err) {
+        log.error(err);
+        return;
       }
     },
     [cName, client, publishMessageByBuffer]
@@ -133,8 +143,8 @@ export default function PublishMessage() {
         return;
       }
 
-      msgs.forEach((message: any) => {
-        publish(message.text, msgs);
+      msgs.forEach((message: AgoraMessage) => {
+        publish(message, msgs);
       });
     },
     [loginSuccess, publish]
