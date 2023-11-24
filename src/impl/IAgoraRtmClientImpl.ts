@@ -602,7 +602,7 @@ export class IRtmClientImpl implements IRtmClient {
       },
     };
     const jsonResults = callIrisApi.call(this, apiType, jsonParams);
-    return jsonResults.result;
+    return jsonResults.requestId;
   }
 
   protected getApiTypeFromPublishWithBuffer(): string {

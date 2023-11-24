@@ -26,5 +26,6 @@
   "agora::rtm::IStreamChannel.joinTopic": "requestId",
   "agora::rtm::IStreamChannel.leaveTopic": "requestId",
   "agora::rtm::IRtmClient.publish": "requestId",
+  "agora::rtm::ext::IRtmClient.publishWithBuffer": "requestId",
   "agora::rtm::IRtmClient.subscribe": "requestId"
 }
