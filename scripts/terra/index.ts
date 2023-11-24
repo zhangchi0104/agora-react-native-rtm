@@ -84,8 +84,8 @@ export default function (
         );
         node.asClazz().methods.map((method) => {
           const clazzMethodUserData: ClazzMethodUserData = {
-            hasComment: node.comment !== '',
-            comment: node.comment
+            hasComment: method.comment !== '',
+            comment: method.comment
               .replace(/^\n/, '* ')
               .replace(/\n$/, '')
               .replace(/\n/g, '\n* '),
@@ -126,8 +126,8 @@ export default function (
       if (node.__TYPE === CXXTYPE.Struct) {
         node.asStruct().member_variables.map((member_variable) => {
           const structMemberVariableUserData: StructMemberVariableUserData = {
-            hasComment: node.comment !== '',
-            comment: node.comment
+            hasComment: member_variable.comment !== '',
+            comment: member_variable.comment
               .replace(/^\n/, '* ')
               .replace(/\n$/, '')
               .replace(/\n/g, '\n* '),

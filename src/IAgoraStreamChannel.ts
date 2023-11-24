@@ -6,7 +6,13 @@ import { PublishOptions, UserList } from './AgoraRtmBase';
  * The qos of rtm message.
  */
 export enum RTM_MESSAGE_QOS {
+  /**
+   * Will not ensure that messages arrive in order.
+   */
   RTM_MESSAGE_QOS_UNORDERED = 0,
+  /**
+   * Will ensure that messages arrive in order.
+   */
   RTM_MESSAGE_QOS_ORDERED = 1,
 }
 
@@ -14,9 +20,21 @@ export enum RTM_MESSAGE_QOS {
  * The priority of rtm message.
  */
 export enum RTM_MESSAGE_PRIORITY {
+  /**
+   * The highest priority
+   */
   RTM_MESSAGE_PRIORITY_HIGHEST = 0,
+  /**
+   * The high priority
+   */
   RTM_MESSAGE_PRIORITY_HIGH = 1,
+  /**
+   * The normal priority (Default)
+   */
   RTM_MESSAGE_PRIORITY_NORMAL = 4,
+  /**
+   * The low priority
+   */
   RTM_MESSAGE_PRIORITY_LOW = 8,
 }
 
@@ -24,9 +42,21 @@ export enum RTM_MESSAGE_PRIORITY {
  * Join channel options.
  */
 export class JoinChannelOptions {
+  /**
+   * Token used to join channel.
+   */
   token?: string;
+  /**
+   * Whether to subscribe channel metadata information
+   */
   withMetadata?: boolean = false;
+  /**
+   * Whether to subscribe channel with user presence
+   */
   withPresence?: boolean = true;
+  /**
+   * Whether to subscribe channel with lock
+   */
   withLock?: boolean = false;
   constructor(
     props?: Partial<{
@@ -44,10 +74,22 @@ export class JoinChannelOptions {
  * Join topic options.
  */
 export class JoinTopicOptions {
+  /**
+   * The qos of rtm message.
+   */
   qos?: RTM_MESSAGE_QOS = RTM_MESSAGE_QOS.RTM_MESSAGE_QOS_UNORDERED;
+  /**
+   * The priority of rtm message.
+   */
   priority?: RTM_MESSAGE_PRIORITY =
     RTM_MESSAGE_PRIORITY.RTM_MESSAGE_PRIORITY_NORMAL;
+  /**
+   * The metaData of topic.
+   */
   meta?: string;
+  /**
+   * The rtm data will sync with media
+   */
   syncWithMedia?: boolean;
   constructor(
     props?: Partial<{
@@ -65,7 +107,13 @@ export class JoinTopicOptions {
  * Topic options.
  */
 export class TopicOptions {
+  /**
+   * The list of users to subscribe.
+   */
   users?: string[];
+  /**
+   * The number of users.
+   */
   userCount?: number = 0;
   constructor(
     props?: Partial<{
@@ -83,29 +131,118 @@ export class TopicOptions {
  * This class provides the stream channel methods that can be invoked by your app.
  */
 export abstract class IStreamChannel {
+  /**
+   * Join the channel.
+   *
+   * @param [in] options join channel options.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
   abstract join(options: JoinChannelOptions, requestId?: number): number;
+  /**
+   * Renews the token. Once a token is enabled and used, it expires after a certain period of time.
+   * You should generate a new token on your server, call this method to renew it.
+   *
+   * @param [in] token Token used renew.
+   * - 0: Success.
+   * - < 0: Failure.
+   */
   abstract renewToken(token: string): number;
+  /**
+   * Leave the channel.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
   abstract leave(requestId?: number): number;
+  /**
+   * Return the channel name of this stream channel.
+   *
+   * @return The channel name.
+   */
   abstract getChannelName(): string;
+  /**
+   * Join a topic.
+   *
+   * @param [in] topic The name of the topic.
+   * @param [in] options The options of the topic.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
   abstract joinTopic(
     topic: string,
     options: JoinTopicOptions,
     requestId?: number
   ): number;
+  /**
+   * Publish a message in the topic.
+   *
+   * @param [in] topic The name of the topic.
+   * @param [in] message The content of the message.
+   * @param [in] length The length of the message.
+   * @param [in] option The option of the message.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
   abstract publishTopicMessage(
     topic: string,
     message: string,
     length: number,
     option: PublishOptions
   ): number;
+  /**
+   * Leave the topic.
+   *
+   * @param [in] topic The name of the topic.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
   abstract leaveTopic(topic: string, requestId?: number): number;
+  /**
+   * Subscribe a topic.
+   *
+   * @param [in] topic The name of the topic.
+   * @param [in] options The options of subscribe the topic.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
   abstract subscribeTopic(
     topic: string,
     options?: TopicOptions,
     requestId?: number
   ): number;
+  /**
+   * Unsubscribe a topic.
+   *
+   * @param [in] topic The name of the topic.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
   abstract unsubscribeTopic(topic: string, options?: TopicOptions): number;
+  /**
+   * Get subscribed user list
+   *
+   * @param [in] topic The name of the topic.
+   * @param [out] users The list of subscribed users.
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
   abstract getSubscribedUserList(topic: string, users: UserList[]): number;
+  /**
+   * Release the stream channel instance.
+   *
+   * @return
+   * - 0: Success.
+   * - < 0: Failure.
+   */
   abstract release(): number;
   abstract publishTopicMessageWithBuffer(
     topic: string,
