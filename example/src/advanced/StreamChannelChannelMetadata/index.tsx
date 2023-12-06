@@ -1,4 +1,6 @@
 import {
+  IStreamChannel,
+  JoinChannelOptions,
   MetadataItem,
   MetadataOptions,
   RTM_CHANNEL_TYPE,
@@ -12,23 +14,16 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 
 import BaseComponent from '../../components/BaseComponent';
-import {
-  AgoraButton,
-  AgoraDivider,
-  AgoraStyle,
-  AgoraSwitch,
-  AgoraTextInput,
-} from '../../components/ui';
+import { AgoraButton, AgoraStyle, AgoraTextInput } from '../../components/ui';
 import Config from '../../config/agora.config';
 import { useRtmClient } from '../../hooks/useRtmClient';
 import * as log from '../../utils/log';
 
-export default function ChannelMetadata() {
+export default function StreamChannelChannelMetadata() {
   const [loginSuccess, setLoginSuccess] = useState(false);
-  const [subscribeSuccess, setSubscribeSuccess] = useState(false);
+  const [joinSuccess, setJoinSuccess] = useState(false);
+  const [streamChannel, setStreamChannel] = useState<IStreamChannel>();
   const [cName, setCName] = useState<string>(Config.channelName);
-  const acquireLockRequestId = useRef<number>();
-  const [retry, setRetry] = useState<boolean>(false);
   const getChannelMetadataRequestId = useRef<number>();
   const setChannelMetadataRequestId = useRef<number>();
   const removeChannelMetadataRequestId = useRef<number>();
@@ -36,61 +31,35 @@ export default function ChannelMetadata() {
   const [uid, setUid] = useState<string>(Config.uid);
   const [metadataKey, setMetadataKey] = useState<string>('channel notice');
   const [metadataValue, setMetadataValue] = useState<string>('rtm test');
-  const [majorRevision, setMajorRevision] = useState<number>(-1);
-  const [revision, setRevision] = useState<number>(-1);
   const [lockName, setLockName] = useState<string>('');
 
   const metadata = useRef<RtmMetadata>(
     new RtmMetadata({
-      majorRevision: majorRevision,
+      majorRevision: -1,
       metadataItems: [],
       metadataItemsSize: 0,
     })
   );
 
-  const onSubscribeResult = useCallback(
-    (requestId: number, channelName: string, errorCode: RTM_ERROR_CODE) => {
-      log.log(
-        'onSubscribeResult',
-        'requestId',
-        requestId,
-        'channelName',
-        channelName,
-        'errorCode',
-        errorCode
-      );
-      setSubscribeSuccess(errorCode === RTM_ERROR_CODE.RTM_ERROR_OK);
-    },
-    []
-  );
-
-  const onAcquireLockResult = useCallback(
+  const onJoinResult = useCallback(
     (
       requestId: number,
       channelName: string,
-      channelType: RTM_CHANNEL_TYPE,
-      _lockName: string,
-      errorCode: RTM_ERROR_CODE,
-      errorDetails: string
+      userId: string,
+      errorCode: RTM_ERROR_CODE
     ) => {
       log.info(
-        'onAcquireLockResult',
+        'onJoinResult',
         'requestId',
         requestId,
         'channelName',
         channelName,
-        'channelType',
-        channelType,
-        'lockName',
-        _lockName,
+        'userId',
+        userId,
         'errorCode',
-        errorCode,
-        'errorDetails',
-        errorDetails
+        errorCode
       );
-      if (errorCode !== RTM_ERROR_CODE.RTM_ERROR_OK) {
-        log.error(`acquire lock failed: errorCode: ${errorCode}`);
-      }
+      setJoinSuccess(errorCode === RTM_ERROR_CODE.RTM_ERROR_OK);
     },
     []
   );
@@ -222,24 +191,46 @@ export default function ChannelMetadata() {
   const client = useRtmClient();
 
   /**
-   * Step 1-1(optional) : subscribe message channel
+   * Step 1-1 : createStreamChannel
    */
-  const subscribe = () => {
-    client.subscribe(cName, {
-      withMessage: true,
-      withMetadata: true,
-      withPresence: true,
-      withLock: true,
-    });
+  const createStreamChannel = () => {
+    if (joinSuccess) {
+      log.error('already joined channel');
+      return;
+    }
+    let result = client.createStreamChannel(cName);
+    setStreamChannel(result);
   };
 
   /**
-   * Step 1-2 : unsubscribe message channel
+   * Step 1-2 : join message channel
    */
-  const unsubscribe = () => {
-    client.unsubscribe(cName);
-    setSubscribeSuccess(false);
+  const join = () => {
+    if (!streamChannel) {
+      log.error('please create streamChannel first');
+      return;
+    }
+    streamChannel.join(
+      new JoinChannelOptions({ token: Config.appId, withMetadata: true })
+    );
   };
+
+  /**
+   * Step 1-3 : leave message channel
+   */
+  const leave = () => {
+    if (streamChannel) {
+      streamChannel.leave(0);
+    }
+  };
+
+  /**
+   * Step 1-4 : destroyStreamChannel
+   */
+  const destroyStreamChannel = useCallback(() => {
+    streamChannel?.release();
+    setStreamChannel(undefined);
+  }, [streamChannel]);
 
   /**
    * Step 2 : setChannelMetadata
@@ -249,7 +240,6 @@ export default function ChannelMetadata() {
       new MetadataItem({
         key: metadataKey,
         value: metadataValue,
-        revision: revision,
         authorUserId: uid,
       }),
     ];
@@ -258,7 +248,7 @@ export default function ChannelMetadata() {
       .getStorage()
       .setChannelMetadata(
         cName,
-        RTM_CHANNEL_TYPE.RTM_CHANNEL_TYPE_MESSAGE,
+        RTM_CHANNEL_TYPE.RTM_CHANNEL_TYPE_STREAM,
         metadata.current,
         new MetadataOptions({ recordUserId: true }),
         lockName
@@ -271,21 +261,7 @@ export default function ChannelMetadata() {
   const getChannelMetadata = () => {
     getChannelMetadataRequestId.current = client
       .getStorage()
-      .getChannelMetadata(cName, RTM_CHANNEL_TYPE.RTM_CHANNEL_TYPE_MESSAGE);
-  };
-
-  /**
-   * Step 3-1 : acquireLock
-   */
-  const acquireLock = () => {
-    acquireLockRequestId.current = client
-      .getLock()
-      .acquireLock(
-        cName,
-        RTM_CHANNEL_TYPE.RTM_CHANNEL_TYPE_MESSAGE,
-        lockName,
-        retry
-      );
+      .getChannelMetadata(cName, RTM_CHANNEL_TYPE.RTM_CHANNEL_TYPE_STREAM);
   };
 
   /**
@@ -296,7 +272,6 @@ export default function ChannelMetadata() {
       new MetadataItem({
         key: metadataKey,
         value: metadataValue,
-        revision: revision,
         authorUserId: uid,
       }),
     ];
@@ -305,7 +280,7 @@ export default function ChannelMetadata() {
       .getStorage()
       .updateChannelMetadata(
         cName,
-        RTM_CHANNEL_TYPE.RTM_CHANNEL_TYPE_MESSAGE,
+        RTM_CHANNEL_TYPE.RTM_CHANNEL_TYPE_STREAM,
         metadata.current,
         new MetadataOptions({ recordUserId: true }),
         lockName
@@ -320,7 +295,6 @@ export default function ChannelMetadata() {
       new MetadataItem({
         key: metadataKey,
         value: metadataValue,
-        revision: revision,
         authorUserId: uid,
       }),
     ];
@@ -329,7 +303,7 @@ export default function ChannelMetadata() {
       .getStorage()
       .removeChannelMetadata(
         cName,
-        RTM_CHANNEL_TYPE.RTM_CHANNEL_TYPE_MESSAGE,
+        RTM_CHANNEL_TYPE.RTM_CHANNEL_TYPE_STREAM,
         metadata.current,
         new MetadataOptions({ recordUserId: true }),
         lockName
@@ -337,12 +311,11 @@ export default function ChannelMetadata() {
   };
 
   useEffect(() => {
-    client.addEventListener('onSubscribeResult', onSubscribeResult);
+    client.addEventListener('onJoinResult', onJoinResult);
     client.addEventListener(
       'onSetChannelMetadataResult',
       onSetChannelMetadataResult
     );
-    client?.addEventListener('onAcquireLockResult', onAcquireLockResult);
     client?.addEventListener(
       'onGetChannelMetadataResult',
       onGetChannelMetadataResult
@@ -357,12 +330,11 @@ export default function ChannelMetadata() {
     );
 
     return () => {
-      client.removeEventListener('onSubscribeResult', onSubscribeResult);
+      client.removeEventListener('onJoinResult', onJoinResult);
       client.removeEventListener(
         'onSetChannelMetadataResult',
         onSetChannelMetadataResult
       );
-      client?.removeEventListener('onAcquireLockResult', onAcquireLockResult);
       client?.removeEventListener(
         'onGetChannelMetadataResult',
         onGetChannelMetadataResult
@@ -379,8 +351,7 @@ export default function ChannelMetadata() {
   }, [
     client,
     uid,
-    onSubscribeResult,
-    onAcquireLockResult,
+    onJoinResult,
     onSetChannelMetadataResult,
     onGetChannelMetadataResult,
     onRemoveChannelMetadataResult,
@@ -412,12 +383,13 @@ export default function ChannelMetadata() {
             RTM_CONNECTION_CHANGE_REASON.RTM_CONNECTION_CHANGED_LOGOUT
           ) {
             setLoginSuccess(false);
+            destroyStreamChannel();
           }
-          setSubscribeSuccess(false);
+          setJoinSuccess(false);
           break;
       }
     },
-    []
+    [destroyStreamChannel]
   );
   useEffect(() => {
     client?.addEventListener(
@@ -442,18 +414,19 @@ export default function ChannelMetadata() {
         />
         <AgoraButton
           disabled={!loginSuccess}
-          title={`${subscribeSuccess ? 'unsubscribe' : 'subscribe'}`}
+          title={`${
+            streamChannel ? 'destroyStreamChannel' : 'createStreamChannel'
+          }`}
           onPress={() => {
-            subscribeSuccess ? unsubscribe() : subscribe();
+            streamChannel ? destroyStreamChannel() : createStreamChannel();
           }}
         />
-        <AgoraTextInput
-          onChangeText={(text) => {
-            if (!text) return;
-            setMajorRevision(parseInt(text, 10));
+        <AgoraButton
+          disabled={!loginSuccess || !streamChannel}
+          title={`${joinSuccess ? 'leaveChannel' : 'joinChannel'}`}
+          onPress={() => {
+            joinSuccess ? leave() : join();
           }}
-          label="majorRevision"
-          value={majorRevision.toString()}
         />
         <AgoraTextInput
           onChangeText={(text) => {
@@ -475,28 +448,6 @@ export default function ChannelMetadata() {
           }}
           label="lockName value"
           value={lockName}
-        />
-        <AgoraSwitch
-          title="retry"
-          value={retry}
-          onValueChange={(v) => {
-            setRetry(v);
-          }}
-        />
-        <AgoraButton
-          title={`acquireLock`}
-          disabled={!loginSuccess}
-          onPress={() => {
-            acquireLock();
-          }}
-        />
-        <AgoraTextInput
-          onChangeText={(text) => {
-            if (!text) return;
-            setRevision(parseInt(text, 10));
-          }}
-          label="revision"
-          value={revision.toString()}
         />
         <AgoraButton
           title={`setChannelMetadata`}

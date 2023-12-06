@@ -12,12 +12,14 @@ on:
         required: false
         type: boolean
         default: false
-  pull_request:
-    types: [labeled, synchronize]
+      build_ios:
+        description: 'build iOS'
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   build-android:
-    # if: ${{ contains(github.event.pull_request.labels.*.name, 'ci:dep-update') }}
     runs-on: ubuntu-latest
     env:
       TURBO_CACHE_DIR: .turbo/android
@@ -70,8 +72,8 @@ jobs:
 
       - name: Modify APP ID
         run: |
-          sed "s/localAppId = '\(.*\)'/localAppId = '${{ secrets.APP_ID_RTM }}'/g" agora.config.ts > tmp
-          mv tmp agora.config.ts
+          touch env_local.ts
+          echo "export default { appId: '${{ secrets.APP_ID_RTM }}', token: '${{ secrets.APP_ID_RTM }}' };" > env_local.ts
         working-directory: example/src/config
 
       - name: Build example for Android
@@ -87,7 +89,7 @@ jobs:
           if-no-files-found: error
 
   build-ios:
-    # if: ${{ contains(github.event.pull_request.labels.*.name, 'ci:dep-update') }}
+    if: ${{ inputs.build_ios }}
     runs-on: macos-latest
     env:
       TURBO_CACHE_DIR: .turbo/ios
@@ -138,8 +140,8 @@ jobs:
 
       - name: Modify APP ID
         run: |
-          sed "s/localAppId = '\(.*\)'/localAppId = '${{ secrets.APP_ID_RTM }}'/g" agora.config.ts > tmp
-          mv tmp agora.config.ts
+          touch env_local.ts
+          echo "export default { appId: '${{ secrets.APP_ID_RTM }}', token: '${{ secrets.APP_ID_RTM }}' };" > env_local.ts
         working-directory: example/src/config
 
       - name: Install the Apple certificate and provisioning profile

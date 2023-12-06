@@ -1,4 +1,6 @@
 import {
+  IStreamChannel,
+  JoinChannelOptions,
   MetadataItem,
   MetadataOptions,
   RTM_CONNECTION_CHANGE_REASON,
@@ -16,11 +18,11 @@ import Config from '../../config/agora.config';
 import { useRtmClient } from '../../hooks/useRtmClient';
 import * as log from '../../utils/log';
 
-export default function UserMetadata() {
+export default function StreamChannelUserMetadata() {
   const [loginSuccess, setLoginSuccess] = useState(false);
-  const [subscribeUserMetadataSuccess, setSubscribeUserMetadataSuccess] =
-    useState(false);
+  const [joinSuccess, setJoinSuccess] = useState(false);
   const [subscribeSuccess, setSubscribeSuccess] = useState(false);
+  const [streamChannel, setStreamChannel] = useState<IStreamChannel>();
   const [cName, setCName] = useState<string>(Config.channelName);
   const getUserMetadataRequestId = useRef<number>();
   const setUserMetadataRequestId = useRef<number>();
@@ -31,29 +33,34 @@ export default function UserMetadata() {
   const [subscribeUid, setSubscribeUid] = useState<string>('123');
   const [metadataKey, setMetadataKey] = useState<string>('profile');
   const [metadataValue, setMetadataValue] = useState<string>('I am a student');
-  const [majorRevision, setMajorRevision] = useState<number>(-1);
-  const [revision, setRevision] = useState<number>(-1);
 
   const metadata = useRef<RtmMetadata>(
     new RtmMetadata({
-      majorRevision: majorRevision,
+      majorRevision: -1,
       metadataItems: [],
       metadataItemsSize: 0,
     })
   );
 
-  const onSubscribeResult = useCallback(
-    (requestId: number, channelName: string, errorCode: RTM_ERROR_CODE) => {
-      log.log(
-        'onSubscribeResult',
+  const onJoinResult = useCallback(
+    (
+      requestId: number,
+      channelName: string,
+      userId: string,
+      errorCode: RTM_ERROR_CODE
+    ) => {
+      log.info(
+        'onJoinResult',
         'requestId',
         requestId,
         'channelName',
         channelName,
+        'userId',
+        userId,
         'errorCode',
         errorCode
       );
-      setSubscribeSuccess(errorCode === RTM_ERROR_CODE.RTM_ERROR_OK);
+      setJoinSuccess(errorCode === RTM_ERROR_CODE.RTM_ERROR_OK);
     },
     []
   );
@@ -164,7 +171,7 @@ export default function UserMetadata() {
         subscribeUserMetadataRequestId.current === requestId &&
         errorCode === RTM_ERROR_CODE.RTM_ERROR_OK
       ) {
-        setSubscribeUserMetadataSuccess(true);
+        setSubscribeSuccess(true);
       }
     },
     []
@@ -176,24 +183,46 @@ export default function UserMetadata() {
   const client = useRtmClient();
 
   /**
-   * Step 1-1(optional) : subscribe message channel
+   * Step 1-1 : createStreamChannel
    */
-  const subscribe = () => {
-    client.subscribe(cName, {
-      withMessage: true,
-      withMetadata: true,
-      withPresence: true,
-      withLock: true,
-    });
+  const createStreamChannel = () => {
+    if (joinSuccess) {
+      log.error('already joined channel');
+      return;
+    }
+    let result = client.createStreamChannel(cName);
+    setStreamChannel(result);
   };
 
   /**
-   * Step 1-2 : unsubscribe message channel
+   * Step 1-2 : join message channel
    */
-  const unsubscribe = () => {
-    client.unsubscribe(cName);
-    setSubscribeSuccess(false);
+  const join = () => {
+    if (!streamChannel) {
+      log.error('please create streamChannel first');
+      return;
+    }
+    streamChannel.join(
+      new JoinChannelOptions({ token: Config.appId, withMetadata: true })
+    );
   };
+
+  /**
+   * Step 1-3 : leave message channel
+   */
+  const leave = () => {
+    if (streamChannel) {
+      streamChannel.leave(0);
+    }
+  };
+
+  /**
+   * Step 1-4 : destroyStreamChannel
+   */
+  const destroyStreamChannel = useCallback(() => {
+    streamChannel?.release();
+    setStreamChannel(undefined);
+  }, [streamChannel]);
 
   /**
    * Step 2 : setUserMetadata
@@ -203,7 +232,6 @@ export default function UserMetadata() {
       new MetadataItem({
         key: metadataKey,
         value: metadataValue,
-        revision: revision,
         authorUserId: uid,
       }),
     ];
@@ -232,7 +260,6 @@ export default function UserMetadata() {
       new MetadataItem({
         key: metadataKey,
         value: metadataValue,
-        revision: revision,
         authorUserId: uid,
       }),
     ];
@@ -254,7 +281,6 @@ export default function UserMetadata() {
       new MetadataItem({
         key: metadataKey,
         value: metadataValue,
-        revision: revision,
         authorUserId: uid,
       }),
     ];
@@ -283,12 +309,12 @@ export default function UserMetadata() {
   const unsubscribeUserMetadata = () => {
     let result = client.getStorage().unsubscribeUserMetadata(subscribeUid);
     if (result === RTM_ERROR_CODE.RTM_ERROR_OK) {
-      setSubscribeUserMetadataSuccess(false);
+      setSubscribeSuccess(false);
     }
   };
 
   useEffect(() => {
-    client.addEventListener('onSubscribeResult', onSubscribeResult);
+    client.addEventListener('onJoinResult', onJoinResult);
     client.addEventListener('onSetUserMetadataResult', onSetUserMetadataResult);
     client?.addEventListener(
       'onGetUserMetadataResult',
@@ -308,7 +334,7 @@ export default function UserMetadata() {
     );
 
     return () => {
-      client.removeEventListener('onSubscribeResult', onSubscribeResult);
+      client.removeEventListener('onJoinResult', onJoinResult);
       client.removeEventListener(
         'onSetUserMetadataResult',
         onSetUserMetadataResult
@@ -333,7 +359,7 @@ export default function UserMetadata() {
   }, [
     client,
     uid,
-    onSubscribeResult,
+    onJoinResult,
     onSetUserMetadataResult,
     onGetUserMetadataResult,
     onRemoveUserMetadataResult,
@@ -366,13 +392,14 @@ export default function UserMetadata() {
             RTM_CONNECTION_CHANGE_REASON.RTM_CONNECTION_CHANGED_LOGOUT
           ) {
             setLoginSuccess(false);
+            setSubscribeSuccess(false);
+            destroyStreamChannel();
           }
-          setSubscribeUserMetadataSuccess(false);
-          setSubscribeSuccess(false);
+          setJoinSuccess(false);
           break;
       }
     },
-    []
+    [destroyStreamChannel]
   );
   useEffect(() => {
     client?.addEventListener(
@@ -397,18 +424,19 @@ export default function UserMetadata() {
         />
         <AgoraButton
           disabled={!loginSuccess}
-          title={`${subscribeSuccess ? 'unsubscribe' : 'subscribe'}`}
+          title={`${
+            streamChannel ? 'destroyStreamChannel' : 'createStreamChannel'
+          }`}
           onPress={() => {
-            subscribeSuccess ? unsubscribe() : subscribe();
+            streamChannel ? destroyStreamChannel() : createStreamChannel();
           }}
         />
-        <AgoraTextInput
-          onChangeText={(text) => {
-            if (!text) return;
-            setMajorRevision(parseInt(text, 10));
+        <AgoraButton
+          disabled={!loginSuccess || !streamChannel}
+          title={`${joinSuccess ? 'leaveChannel' : 'joinChannel'}`}
+          onPress={() => {
+            joinSuccess ? leave() : join();
           }}
-          label="majorRevision"
-          value={majorRevision.toString()}
         />
         <AgoraTextInput
           onChangeText={(text) => {
@@ -423,14 +451,6 @@ export default function UserMetadata() {
           }}
           label="metadata value"
           value={metadataValue}
-        />
-        <AgoraTextInput
-          onChangeText={(text) => {
-            if (!text) return;
-            setRevision(parseInt(text, 10));
-          }}
-          label="revision"
-          value={revision.toString()}
         />
         <AgoraButton
           title={`setUserMetadata`}
@@ -467,17 +487,17 @@ export default function UserMetadata() {
           placeholder="input uid you want to subscribe"
           label="subscribeUid"
           value={subscribeUid}
-          disabled={subscribeUserMetadataSuccess}
+          disabled={subscribeSuccess}
         />
         <AgoraButton
           title={
-            subscribeUserMetadataSuccess
+            subscribeSuccess
               ? `unsubscribeUserMetadata`
               : `subscribeUserMetadata`
           }
           disabled={!loginSuccess}
           onPress={() => {
-            subscribeUserMetadataSuccess
+            subscribeSuccess
               ? unsubscribeUserMetadata()
               : subscribeUserMetadata();
           }}

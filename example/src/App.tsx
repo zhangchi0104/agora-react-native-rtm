@@ -3,15 +3,10 @@ import {
   StackScreenProps,
   createStackNavigator,
 } from '@react-navigation/stack';
-import createAgoraRtmClient, {
-  isDebuggable,
-  setDebuggable,
-} from 'agora-react-native-rtm';
+import { isDebuggable, setDebuggable } from 'agora-react-native-rtm';
 import React, { useEffect } from 'react';
 import {
-  AppState,
   Keyboard,
-  Platform,
   SafeAreaView,
   SectionList,
   StyleSheet,
@@ -23,22 +18,11 @@ import {
 import Advanced from './advanced';
 import Basic from './basic';
 import Client from './components/Client';
+import { ConfigHeader } from './config/ConfigHeader';
 const RootStack = createStackNavigator<any>();
-// setDebuggable(!isDebuggable());
 const DATA = [Basic, Advanced];
 
 export default function App() {
-  useEffect(() => {
-    let subscription = AppState.addEventListener('change', (state) => {
-      //just for live reload mode To reset the rtm client in Android
-      if (state === 'background' && Platform.OS === 'android') {
-        createAgoraRtmClient().release();
-      }
-    });
-    return () => {
-      subscription.remove();
-    };
-  }, []);
   return (
     <NavigationContainer>
       <SafeAreaView
@@ -70,7 +54,9 @@ export default function App() {
           onPress={() => {
             setDebuggable(!isDebuggable());
           }}
-        />
+        >
+          <Text style={styles.version}>Powered by Agora RTM SDK</Text>
+        </TouchableOpacity>
       </SafeAreaView>
     </NavigationContainer>
   );
@@ -79,6 +65,11 @@ export default function App() {
 const AppSectionList = SectionList<any>;
 
 const Home = ({ navigation }: StackScreenProps<any>) => {
+  useEffect(() => {
+    const headerRight = () => <ConfigHeader />;
+    navigation.setOptions({ headerRight });
+  }, [navigation]);
+
   return (
     <AppSectionList
       sections={DATA}

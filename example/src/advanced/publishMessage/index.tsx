@@ -2,13 +2,11 @@ import { Buffer } from 'buffer';
 
 import {
   MessageEvent,
-  PresenceEvent,
   PublishOptions,
   RTM_CONNECTION_CHANGE_REASON,
   RTM_CONNECTION_STATE,
   RTM_ERROR_CODE,
   RTM_MESSAGE_TYPE,
-  StorageEvent,
 } from 'agora-react-native-rtm';
 import React, { useCallback, useEffect, useState } from 'react';
 import { GiftedChat } from 'react-native-gifted-chat';
@@ -28,10 +26,6 @@ export default function PublishMessage() {
   const [uid, setUid] = useState<string>(Config.uid);
   const [messages, setMessages] = useState<AgoraMessage[]>([]);
 
-  const onStorageEvent = useCallback((event: StorageEvent) => {
-    log.log('onStorageEvent', 'event', event);
-  }, []);
-
   const onSubscribeResult = useCallback(
     (requestId: number, channelName: string, errorCode: RTM_ERROR_CODE) => {
       log.log(
@@ -48,10 +42,6 @@ export default function PublishMessage() {
     []
   );
 
-  const onPresenceEvent = useCallback((event: PresenceEvent) => {
-    log.log('onPresenceEvent', 'event', event);
-  }, []);
-
   const onPublishResult = useCallback(
     (requestId: number, errorCode: RTM_ERROR_CODE) => {
       log.log(
@@ -62,7 +52,7 @@ export default function PublishMessage() {
         errorCode
       );
       if (errorCode !== RTM_ERROR_CODE.RTM_ERROR_OK) {
-        log.error('CHANNEL_INVALID_MESSAGE', errorCode);
+        log.error(`CHANNEL_INVALID_MESSAGE: ${errorCode}`);
       } else {
         messages.map((message) => {
           if (message.requestId === requestId) {
@@ -154,10 +144,11 @@ export default function PublishMessage() {
    * Step 3(optional) : subscribe message channel
    */
   const subscribe = () => {
-    client.subscribe(Config.channelName, {
+    client.subscribe(cName, {
       withMessage: true,
       withMetadata: true,
       withPresence: true,
+      withLock: true,
     });
   };
 
@@ -165,33 +156,21 @@ export default function PublishMessage() {
    * Step 4 : unsubscribe message channel
    */
   const unsubscribe = () => {
-    client.unsubscribe(Config.channelName);
+    client.unsubscribe(cName);
     setSubscribeSuccess(false);
   };
 
   useEffect(() => {
-    client.addEventListener('onStorageEvent', onStorageEvent);
     client.addEventListener('onSubscribeResult', onSubscribeResult);
-    client.addEventListener('onPresenceEvent', onPresenceEvent);
     client.addEventListener('onMessageEvent', onMessageEvent);
     client.addEventListener('onPublishResult', onPublishResult);
 
     return () => {
-      client.removeEventListener('onStorageEvent', onStorageEvent);
       client.removeEventListener('onSubscribeResult', onSubscribeResult);
-      client.removeEventListener('onPresenceEvent', onPresenceEvent);
       client.removeEventListener('onMessageEvent', onMessageEvent);
       client.removeEventListener('onPublishResult', onPublishResult);
     };
-  }, [
-    client,
-    uid,
-    onStorageEvent,
-    onSubscribeResult,
-    onPresenceEvent,
-    onMessageEvent,
-    onPublishResult,
-  ]);
+  }, [client, uid, onSubscribeResult, onMessageEvent, onPublishResult]);
 
   const onConnectionStateChanged = useCallback(
     (
