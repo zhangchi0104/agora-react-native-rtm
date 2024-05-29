@@ -1,16 +1,15 @@
 {
-  "name": "terra-generate",
+  "name": "terra",
   "version": "1.0.0",
-  "description": "generate code by terra",
-  "license": "MIT",
-  "engines": {
-    "node": ">=18"
-  },
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "build": "terra",
-    "terra": "yarn terra-types && yarn terra-impl",
-    "terra-types": "sh terra-types.sh",
-    "terra-impl": "sh terra-impl.sh"
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.6.0"
   },
   "dependencies": {
     "@agoraio-extensions/cxx-parser": "git@github.com:AgoraIO-Extensions/terra.git#head=main&workspace=cxx-parser",
@@ -21,7 +20,7 @@
     "@types/node": "^18.17.9",
     "js-yaml": "^4.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "5.1.6"
+    "typescript": "^5.1.6"
   },
   "packageManager": "yarn@4.0.1"
 }

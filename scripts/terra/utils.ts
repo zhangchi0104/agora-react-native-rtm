@@ -1,27 +1,19 @@
 import {
   CXXFile,
+  CXXTYPE,
+  Clazz,
+  Enumz,
   MemberFunction,
   MemberVariable,
   Struct,
 } from '@agoraio-extensions/cxx-parser';
-
-const path = require('path');
+import { ParseResult } from '@agoraio-extensions/terra-core';
 
 let regMap: any = {
   isCallback: '.*(Observer|Handler|Callback|Receiver|Sink).*',
 };
 
-const filterFileList = require('./config/filter_file_list.json');
 const specialConstructList = require('./config/special_construct_list.json');
-
-export function filterFile(cxxfiles: CXXFile[]): CXXFile[] {
-  return cxxfiles.filter((file) => {
-    const fileName = path.basename(file.file_path);
-    return !filterFileList.some((filter: string) =>
-      new RegExp(filter, 'g').test(fileName)
-    );
-  });
-}
 
 export function isMatch(str: string, type: string): boolean {
   let result = false;
@@ -72,4 +64,58 @@ export function getDefaultValue(node: Struct, member_variable: MemberVariable) {
     });
   });
   return default_value;
+}
+
+export function lowerFirstWord(str: string) {
+  return str.charAt(0).toLowerCase() + str.slice(1);
+}
+
+export function upperFirstWord(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export function deepClone(obj: any, skipKeys?: string[]) {
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
+
+  let clone = Array.isArray(obj) ? [] : {};
+
+  for (let key in obj) {
+    if (skipKeys?.includes(key)) {
+      continue;
+    }
+    if (obj.hasOwnProperty(key)) {
+      (clone as any)[key] = deepClone(obj[key], skipKeys);
+    }
+  }
+
+  return clone;
+}
+
+export function findClazz(value: string, parseResult: ParseResult) {
+  return (
+    parseResult?.nodes.flatMap((f) => {
+      let file = f as CXXFile;
+      return file.nodes.filter((node) => node.__TYPE === CXXTYPE.Clazz);
+    }) as Clazz[]
+  ).filter((clazz: Clazz) => clazz.name === value);
+}
+
+export function findEnumz(value: string, parseResult: ParseResult) {
+  return (
+    parseResult?.nodes.flatMap((f) => {
+      let file = f as CXXFile;
+      return file.nodes.filter((node) => node.__TYPE === CXXTYPE.Enumz);
+    }) as Enumz[]
+  ).filter((enumz: Enumz) => enumz.name === value);
+}
+
+export function findStruct(value: string, parseResult: ParseResult) {
+  return (
+    parseResult?.nodes.flatMap((f) => {
+      let file = f as CXXFile;
+      return file.nodes.filter((node) => node.__TYPE === CXXTYPE.Struct);
+    }) as Struct[]
+  ).filter((struct: Struct) => struct.name === value);
 }
