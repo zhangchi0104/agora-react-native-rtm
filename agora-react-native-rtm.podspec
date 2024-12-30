@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.authors      = package["author"]
 
   s.platforms    = { :ios => "12.4" }
-  s.source       = { :git => "https://github.com/AgoraIO-Extensions/agora-react-native-rtm.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/zhangchi0104/agora-react-native-rtm.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm}"
 
